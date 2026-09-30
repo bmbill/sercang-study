@@ -1,4 +1,4 @@
-const CACHE = "sts-20260930-144330";
+const CACHE = "sts-20260930-152900";
 const FONTS = "sts-fonts";
 const PRECACHE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "chapters/ch01.json"];
 
@@ -25,6 +25,8 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (url.origin !== location.origin) return;
+  // videos stream in byte ranges (206); leave them to the browser instead of caching partial responses
+  if (url.pathname.endsWith(".mp4") || req.headers.has("range")) return;
   e.respondWith(fetch(req).then(res => {
     if (res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
     return res;
