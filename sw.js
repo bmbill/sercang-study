@@ -1,4 +1,4 @@
-const CACHE = "sts-20260930-175940";
+const CACHE = "sts-20260930-181105";
 const FONTS = "sts-fonts";
 const PRECACHE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "chapters/ch01.json", "chapters/ch02.json"];
 
