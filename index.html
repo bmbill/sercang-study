@@ -1,0 +1,707 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>賽倉攝類學自學</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<style>
+/* Layout: sticky top bar, chapter rail on the left (drawer on phones), one reading column on the right with per-chapter tabs. */
+:root{
+  --bg:#F1F0ED; --surface:#FFFFFF; --surface-2:#E7E4DF; --fg:#1F1A1B; --muted:#6A6163; --line:#D7D2CB;
+  --maroon:#7C1D2A; --maroon-soft:#F2E4E5; --saffron:#A96F0E; --saffron-soft:#F6EBD5;
+  --ok:#2E6A44; --ok-soft:#E0EFE5; --bad:#A3322A; --bad-soft:#F7E2DF;
+  --f-display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --f-body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --f-kai:"LXGW WenKai TC","DFKai-SB","標楷體","Kaiti TC",serif;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141112; --surface:#1D1819; --surface-2:#2A2324; --fg:#ECE5E2; --muted:#A99D9F; --line:#3A3132;
+  --maroon:#E58390; --maroon-soft:#3B2327; --saffron:#E3AE4C; --saffron-soft:#3A2F1B;
+  --ok:#7DC896; --ok-soft:#1D3325; --bad:#F08E83; --bad-soft:#3F2320; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141112; --surface:#1D1819; --surface-2:#2A2324; --fg:#ECE5E2; --muted:#A99D9F; --line:#3A3132;
+  --maroon:#E58390; --maroon-soft:#3B2327; --saffron:#E3AE4C; --saffron-soft:#3A2F1B;
+  --ok:#7DC896; --ok-soft:#1D3325; --bad:#F08E83; --bad-soft:#3F2320; color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--maroon)}
+:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-display);font-weight:900;font-size:1.15rem;letter-spacing:.04em;white-space:nowrap}
+.brand small{font-family:var(--f-body);font-weight:500;font-size:.75rem;color:var(--muted);margin-left:.5em;letter-spacing:.08em}
+.topbar .spacer{flex:1}
+.overall{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);white-space:nowrap}
+.overall .bar{width:90px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.overall .bar i{display:block;height:100%;background:var(--maroon)}
+.menu-btn{display:none;border:1px solid var(--line);background:transparent;border-radius:8px;padding:4px 10px;white-space:nowrap;flex:none}
+
+.shell{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100% - 52px)}
+.rail{border-right:1px solid var(--line);padding:16px 12px 40px;background:var(--bg);position:sticky;top:52px;align-self:start;max-height:calc(100vh - 52px);overflow-y:auto}
+.rail-link{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:6px 10px;border-radius:8px;font-size:.92rem;line-height:1.45}
+.rail-link:hover{background:var(--surface-2)}
+.rail-link[aria-current="page"]{background:var(--maroon-soft);color:var(--maroon);font-weight:700}
+.rail-link .no{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.78rem;min-width:1.6em}
+.rail-link[aria-current="page"] .no{color:var(--maroon)}
+.rail-link.unbuilt{color:var(--muted)}
+.rail-link .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;flex:none;border:1.5px solid var(--line)}
+.dot.learning{background:var(--saffron);border-color:var(--saffron)}
+.dot.done{background:var(--ok);border-color:var(--ok)}
+.part{margin-top:18px}
+.part h3{font-family:var(--f-display);font-size:.8rem;letter-spacing:.2em;color:var(--muted);margin:0 10px 4px;font-weight:700}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin:18px 10px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--line)}
+
+main{padding-block:28px 80px;padding-inline:clamp(16px,4vw,48px);min-width:0}
+.col{max-width:760px;margin:0 auto}
+.eyebrow{font-size:.78rem;letter-spacing:.18em;color:var(--saffron);font-weight:700}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(1.6rem,3.6vw,2.2rem);line-height:1.35;margin:.2em 0 .3em;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:700;font-size:1.25rem;margin:2em 0 .6em;text-wrap:balance}
+h3{font-size:1rem;margin:1.4em 0 .4em}
+p{margin:.6em 0}
+.lead{font-size:1.06rem;color:var(--fg)}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.meta{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:.85rem;color:var(--muted)}
+.meta a{font-weight:500}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:22px 0 8px;overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:transparent;padding:8px 14px;font-size:.95rem;border-bottom:2.5px solid transparent;white-space:nowrap;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--maroon);border-bottom-color:var(--maroon);font-weight:700}
+.tabs button:disabled{opacity:.45;cursor:default}
+
+ul.clean{padding-left:1.2em;margin:.4em 0}
+ul.clean li{margin:.35em 0}
+.steps{display:grid;gap:10px;counter-reset:s}
+.step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.step b.n{font-family:var(--f-display);color:var(--maroon);font-size:1.05rem}
+.step .name{font-weight:700}
+.checkrow{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.92rem}
+
+/* 論式 card: the three members of a consequence, labeled the way a debate courtyard names them */
+.arg{font-family:var(--f-kai);font-size:1.22rem;line-height:2.4;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.seg{display:inline-flex;flex-direction:column;align-items:center;line-height:1.3;vertical-align:bottom;margin:0 2px}
+.seg small{font-family:var(--f-body);font-size:.62rem;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.seg span{padding:1px 6px;border-radius:5px}
+.seg.s span{background:var(--surface-2)}
+.seg.p span{background:var(--maroon-soft);color:var(--maroon)}
+.seg.r span{background:var(--saffron-soft);color:var(--saffron)}
+.answers{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.answers button,.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 18px;font-weight:500}
+.answers button:hover:not(:disabled),.opt:hover:not(:disabled){border-color:var(--maroon);color:var(--maroon)}
+.answers button:disabled,.opt:disabled{cursor:default}
+.answers button.right,.opt.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.answers button.wrong,.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.feedback{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:.93rem}
+.feedback.ok{background:var(--ok-soft)}
+.feedback.bad{background:var(--bad-soft)}
+.feedback b{margin-right:.4em}
+
+.drill-sec{margin-top:26px}
+.drill-sec h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.drill-sec h3 .claim{font-family:var(--f-kai);font-weight:400;color:var(--muted)}
+.drill{margin-top:10px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:14px 0}
+.btn{border:1.5px solid var(--maroon);background:var(--maroon);color:var(--surface);border-radius:8px;padding:6px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--maroon)}
+.btn:disabled{opacity:.5;cursor:default}
+.stat{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted)}
+
+/* 名相 tree */
+.tree{margin-top:10px}
+.node{border-left:2px solid var(--line);padding:4px 0 4px 14px;margin:6px 0 6px 4px}
+.node.root{border-left:0;padding-left:0;margin-left:0}
+.node-h{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+.node-t{font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.node.root>.node-h .node-t{font-size:1.3rem;color:var(--maroon)}
+.def{font-family:var(--f-kai);font-size:.95rem;background:var(--maroon-soft);color:var(--maroon);padding:0 8px;border-radius:5px}
+.def::before{content:"性相　";font-family:var(--f-body);font-size:.7rem;letter-spacing:.1em;opacity:.8}
+.syn,.eg,.nt{font-size:.88rem;color:var(--muted);margin:2px 0}
+.eg::before{content:"例　";color:var(--saffron);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.chip{font-family:var(--f-kai);border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:0 9px;font-size:.95rem}
+.four{display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:10px}
+.four>div{background:var(--surface);padding:10px 12px;font-size:.92rem}
+.four .hd{background:var(--surface-2);font-weight:700;font-size:.82rem;color:var(--muted)}
+.four .cell b{display:block;font-family:var(--f-kai);font-weight:700}
+.tbl-wrap{overflow-x:auto}
+table.defs{border-collapse:collapse;width:100%;font-size:.93rem;margin-top:8px}
+table.defs td{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
+table.defs td:first-child{font-weight:700;white-space:nowrap}
+table.defs td:last-child{font-family:var(--f-kai)}
+
+/* quiz */
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.qhead{display:flex;justify-content:space-between;gap:10px;font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.qprog{height:4px;background:var(--surface-2);border-radius:2px;margin:8px 0 14px;overflow:hidden}
+.qprog i{display:block;height:100%;background:var(--saffron)}
+.qtext{font-size:1.08rem;font-weight:500;margin-bottom:12px}
+.opts{display:grid;gap:8px}
+.opt{border-radius:8px;text-align:left;padding:9px 14px}
+.score{font-family:var(--f-display);font-size:2.6rem;font-weight:900;color:var(--maroon);font-variant-numeric:tabular-nums;line-height:1.1}
+.wronglist{display:grid;gap:10px;margin-top:12px}
+.wronglist .item{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:.92rem}
+
+/* debate */
+.modes{display:flex;gap:6px;flex-wrap:wrap}
+.modes button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px;font-size:.9rem}
+.modes button[aria-pressed="true"]{border-color:var(--maroon);background:var(--maroon-soft);color:var(--maroon);font-weight:700}
+.log{display:grid;gap:12px;margin:16px 0}
+.msg{max-width:92%;padding:10px 14px;border-radius:12px;white-space:pre-wrap;word-break:break-word}
+.msg.ai{background:var(--surface);border:1px solid var(--line);justify-self:start}
+.msg.me{background:var(--maroon-soft);justify-self:end}
+.msg .who{display:block;font-size:.72rem;letter-spacing:.12em;color:var(--muted);margin-bottom:2px}
+.msg .arg{margin-top:10px;font-size:1.12rem}
+.thinking{color:var(--muted);font-style:normal}
+.composer{display:grid;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:10px 0 12px;border-top:1px solid var(--line)}
+.composer .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.composer textarea{flex:1;min-width:0;min-height:44px;max-height:160px;resize:vertical;font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)}
+.composer select{font:inherit;font-size:.85rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);padding:3px 6px}
+.note{font-size:.85rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+
+.ghost-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ghost-tabs span{border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:.88rem;color:var(--muted)}
+.flow{display:grid;gap:8px;margin-top:10px}
+.flow .q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.flow .q b{color:var(--maroon)}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:10px}
+.chgrid button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;font-size:.88rem;display:flex;gap:8px;align-items:center}
+.chgrid button .dot{margin-left:auto;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--line);flex:none}
+
+@media (max-width:860px){
+  .menu-btn{display:inline-block}
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:fixed;top:52px;left:0;bottom:0;width:min(300px,86vw);max-height:none;z-index:30;background:var(--surface);transform:translateX(-102%);transition:transform .2s ease;box-shadow:0 0 0 100vmax transparent}
+  .rail.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+  .overall .bar{display:none}
+}
+@media (prefers-reduced-motion:reduce){.rail{transition:none}}
+</style>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-controls="rail" aria-expanded="false">章節</button>
+  <div class="brand">賽倉攝類學<small>自學辯經室</small></div>
+  <div class="spacer"></div>
+  <div class="overall" id="overall"></div>
+</header>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="章節"></nav>
+  <main id="main"><div class="col"><p class="muted">載入中…</p></div></main>
+</div>
+
+<script>
+/* ---------- chapter registry: the 26-chapter template ---------- */
+const READER = v => `https://amec.amrtf.org/reader/B000041/${v}`;
+const VOL_NAME = v => ["","","卷一","卷二","卷三","卷四","卷五","卷六","卷七","卷八","卷九","卷十","卷十一","卷十二","卷十三","卷十四"][v];
+const CHAPTERS = [
+  [1,"紅白顏色的單元",2],[2,"證有證無的單元",2],[3,"是反非反的單元",2],[4,"辨識反體的單元",3],
+  [5,"一與異的單元",3],[6,"小因果的單元",4],[7,"境與有境的單元",4],[8,"總別的單元",5],
+  [9,"相違相係屬的單元",6],[10,"性相名相的單元",6],[11,"恰派實法反法的單元",6],[12,"自宗實法反法的單元",7],
+  [13,"周遍斷語的敘述軌則的單元",7],[14,"周遍八門的單元",8],[15,"承許軌則的單元",8],[16,"第六囀聲的單元",9],
+  [17,"小應成的單元",10],[18,"三時的單元",11],[19,"自相共相的單元",12],[20,"除遣趣入與成立趣入的單元",12],
+  [21,"詮類聲與詮聚聲的單元",13],[22,"遮破法成立法的單元",13],[23,"遣餘法的單元",13],[24,"大相違相係屬的單元",14],
+  [25,"大應成的單元",14],[26,"大因果的單元",14]
+].map(([no,title,vol])=>({no,title,vol,id:"ch"+String(no).padStart(2,"0")}));
+const BUILT = new Set(["ch01"]);   // add a chapter id here once chapters/chNN.json exists
+const PARTS = [["初級理路",1,8],["中級理路",9,17],["高級理路",18,26]];
+const CN_NUM = n => { const d="〇一二三四五六七八九"; if(n<10) return d[n]; if(n<20) return "十"+(n%10?d[n%10]:""); return d[Math.floor(n/10)]+"十"+(n%10?d[n%10]:""); };
+const partOf = no => PARTS.find(p=>no>=p[1]&&no<=p[2])[0];
+// AI 辯論 only exists inside a claude.ai viewer; a copy hosted elsewhere (GitHub Pages) leaves the tab out.
+const IN_CLAUDE = !!(window.claude && window.claude.use);
+const TABS = [["overview","導讀"],["terms","名相"],["drills","論式演練"],["quiz","測驗"],["debate","AI 辯論"]].filter(t=>IN_CLAUDE || t[0]!=="debate");
+
+/* ---------- tiny DOM helper ---------- */
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  if (attrs) for (const [k,v] of Object.entries(attrs)){
+    if (v==null || v===false) continue;
+    if (k==="class") e.className=v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k==="html") e.innerHTML=v;
+    else e.setAttribute(k, v===true?"":v);
+  }
+  for (const k of kids.flat()){ if(k==null||k===false) continue; e.append(k instanceof Node?k:String(k)); }
+  return e;
+}
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+/* ---------- progress: per-person, db when available, browser storage as fallback ---------- */
+const LS_KEY = "sts-progress-v1";
+let progress = { chapters:{} };
+try { const raw = localStorage.getItem(LS_KEY); if (raw) progress = JSON.parse(raw); } catch {}
+let dbRef = null, saveTimer = null;
+function chp(id){ return progress.chapters[id] ||= { drills:{}, quiz:{best:null,last:null,attempts:0,wrong:[]}, debates:0, readSource:false }; }
+function save(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(progress)); } catch {}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{ if(!dbRef) return; try { await dbRef.set(JSON.parse(JSON.stringify(progress))); } catch(e){ if(e?.code==="invalid_argument") dbRef=null; } }, 800);
+  renderRail(); renderOverall();
+}
+function status(id){
+  if (!BUILT.has(id)) return "unbuilt";
+  const c = progress.chapters[id]; if (!c) return "new";
+  if ((c.quiz?.best ?? 0) >= 80) return "done";
+  const touched = Object.keys(c.drills||{}).length || c.quiz?.attempts || c.debates || c.readSource;
+  return touched ? "learning" : "new";
+}
+(async ()=>{
+  if (!window.claude?.use) return;
+  const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+  if (!db || !user) return;
+  const uid = await user.id(); if (!uid) return;
+  dbRef = db.collection("data/users/"+uid).doc("progress");
+  try {
+    const snap = await dbRef.get();
+    if (snap.exists){ const remote = snap.data(); if (remote?.chapters){ progress = JSON.parse(JSON.stringify(remote)); try{localStorage.setItem(LS_KEY, JSON.stringify(progress));}catch{} render(); } }
+    else if (Object.keys(progress.chapters).length) { await dbRef.set(JSON.parse(JSON.stringify(progress))); }
+  } catch {}
+})();
+
+/* ---------- routing ---------- */
+let route = { page:"intro", tab:"overview" };
+function parseHash(){
+  const h = location.hash.replace(/^#/,"");
+  const m = h.match(/^(ch\d\d)(?:-(\w+))?$/);
+  if (m && CHAPTERS.some(c=>c.id===m[1])) route = { page:m[1], tab: TABS.some(t=>t[0]===m[2]) ? m[2] : "overview" };
+  else route = { page:"intro", tab:"overview" };
+}
+function go(page, tab="overview"){ location.hash = page==="intro" ? "intro" : (tab==="overview" ? page : page+"-"+tab); }
+window.addEventListener("hashchange", ()=>{ parseHash(); render(); window.scrollTo(0,0); closeRail(); });
+
+/* ---------- chapter data ---------- */
+const cache = {};
+async function loadChapter(id){
+  if (cache[id]) return cache[id];
+  const r = await fetch(`chapters/${id}.json`);
+  if (!r.ok) throw new Error("fetch");
+  return cache[id] = await r.json();
+}
+
+/* ---------- rail + overall ---------- */
+const rail = document.getElementById("rail");
+const menuBtn = document.getElementById("menuBtn");
+menuBtn.onclick = ()=>{ const o = rail.classList.toggle("open"); menuBtn.setAttribute("aria-expanded", o); };
+function closeRail(){ rail.classList.remove("open"); menuBtn.setAttribute("aria-expanded", false); }
+document.addEventListener("click", e=>{ if (rail.classList.contains("open") && !rail.contains(e.target) && e.target!==menuBtn) closeRail(); });
+
+function renderRail(){
+  rail.replaceChildren(
+    el("button",{class:"rail-link","aria-current":route.page==="intro"?"page":null,onclick:()=>go("intro")}, el("span",{class:"no"},"序"), "辯經入門與使用說明"),
+    ...PARTS.map(([name,a,b])=> el("div",{class:"part"},
+      el("h3",null,name),
+      ...CHAPTERS.filter(c=>c.no>=a&&c.no<=b).map(c=>{
+        const st = status(c.id);
+        return el("button",{class:"rail-link"+(st==="unbuilt"?" unbuilt":""),"aria-current":route.page===c.id?"page":null,onclick:()=>go(c.id),title:st==="unbuilt"?"待建置":null},
+          el("span",{class:"no"},c.no), c.title, el("span",{class:"dot "+st,"aria-label":{done:"已完成",learning:"學習中",new:"未開始",unbuilt:"待建置"}[st]}));
+      })
+    )),
+    el("div",{class:"legend"},
+      el("span",null,el("i",{class:"dot"}),"未開始"),
+      el("span",null,el("i",{class:"dot learning"}),"學習中"),
+      el("span",null,el("i",{class:"dot done"}),"測驗 80 分以上"))
+  );
+}
+function renderOverall(){
+  const done = CHAPTERS.filter(c=>status(c.id)==="done").length;
+  document.getElementById("overall").replaceChildren(
+    el("span",null,`已完成 ${done} / 26 章`), el("span",{class:"bar"}, el("i",{style:`width:${done/26*100}%`})));
+}
+
+/* ---------- 論式 card ---------- */
+function argCard(s,p,r){
+  return el("div",{class:"arg"},
+    el("span",{class:"seg s"},el("small",null,"有法"),el("span",null,s)), "有法，應當",
+    el("span",{class:"seg p"},el("small",null,"所立法"),el("span",null,p)), "，因為",
+    el("span",{class:"seg r"},el("small",null,"因"),el("span",null,r)), "的緣故。");
+}
+function answerButtons(correct, onPick){
+  const wrap = el("div",{class:"answers"});
+  const fb = el("div");
+  for (const opt of ["承許","因不成","不遍"]){
+    const b = el("button",{type:"button"},opt);
+    b.onclick = ()=>{
+      wrap.querySelectorAll("button").forEach(x=>{ x.disabled=true; if(x.textContent===correct) x.classList.add("right"); });
+      if (opt!==correct) b.classList.add("wrong");
+      onPick(opt===correct, fb);
+    };
+    wrap.append(b);
+  }
+  return [wrap, fb];
+}
+
+/* ---------- pages ---------- */
+const main = document.getElementById("main");
+function render(){
+  renderRail(); renderOverall();
+  if (route.page==="intro") return renderIntro();
+  const ch = CHAPTERS.find(c=>c.id===route.page);
+  if (!BUILT.has(ch.id)) return renderUnbuilt(ch);
+  renderChapter(ch);
+}
+
+function renderIntro(){
+  const col = el("div",{class:"col"},
+    el("div",{class:"eyebrow"},"開始之前"),
+    el("h1",null,"辯經入門與使用說明"),
+    el("p",{class:"lead"},"《賽倉攝類學》通篇由「應成論式」構成。先認得論式的三個部分和三種回答，讀原文和練習都會輕鬆很多。"),
+    el("h2",null,"應成論式的三個部分"),
+    argCard("白法螺的顏色","是紅色","是顏色"),
+    el("ul",{class:"clean"},
+      el("li",null,el("b",null,"有法"),"：討論的對象，書中寫作「……有法」。"),
+      el("li",null,el("b",null,"所立法"),"：「應當是……」要成立的內容。有法加上所立法，合稱「宗」。"),
+      el("li",null,el("b",null,"因"),"：「因為是……的緣故」提出的理由。")),
+    el("h2",null,"三種回答，怎麼判斷"),
+    el("div",{class:"flow"},
+      el("div",{class:"q"},el("b",null,"一、宗成立嗎？"),"　有法真的是所立法嗎？是 → 答「",el("b",null,"承許"),"」。"),
+      el("div",{class:"q"},el("b",null,"二、宗不成立，那因在有法上成立嗎？"),"　不成立 → 答「",el("b",null,"因不成"),"」。"),
+      el("div",{class:"q"},el("b",null,"三、因成立、宗卻不成立"),"　表示「是因的話遍是所立法」有漏洞 → 答「",el("b",null,"不遍"),"」。")),
+    el("p",{class:"small muted"},"上面這張卡片：白法螺的顏色是顏色（因成立），但它不是紅色（宗不成立），所以答「不遍」。實際辯經還有其他答法，本站只練本書最常用的這三種。"),
+    el("h3",null,"書中常見的說法"),
+    el("ul",{class:"clean small"},
+      el("li",null,"「已經承許周遍了」：對方先前自己說過「是 A 遍是 B」，所以不能再答不遍。"),
+      el("li",null,"「如果說因不成立的話……」：立宗者接著提出新論式，證明那個因成立。"),
+      el("li",null,"「如果承許根本論式的宗……」：對方承許了錯誤的宗，立宗者引出矛盾。")),
+    el("h2",null,"每一章的學習流程"),
+    el("div",{class:"steps"},
+      ...[["導讀","這一章在學什麼、原文怎麼分段，附原文連結。"],["名相","分類樹、性相一覽、四句。先把架構記熟。"],["論式演練","書中的論式逐條練答，不計分，看解說。"],["測驗","每回隨機 10 題，80 分以上算完成這一章；答錯的題目可以單獨複習。"],["AI 辯論","Claude 扮演立宗者出論式，你回答，它依本章內容判斷並追問。也可以自由提問。"]]
+      .filter(([n])=>IN_CLAUDE || n!=="AI 辯論").map(([n,d],i)=>el("div",{class:"step"},el("b",{class:"n"},CN_NUM(i+1)),el("div",null,el("div",{class:"name"},n),el("div",{class:"small muted"},d))))),
+    el("h2",null,"二十六章進度"),
+    el("div",{class:"chgrid"}, ...CHAPTERS.map(c=>{ const st=status(c.id); return el("button",{onclick:()=>go(c.id),class:st==="unbuilt"?"muted":null}, el("span",{class:"no small muted"},c.no), c.title, el("span",{class:"dot "+st})); })),
+    el("p",{class:"small muted",style:"margin-top:18px"},"原文出自大慈恩月光藏網頁版《賽倉攝類學》。本站的導讀、題目與解說為自學用的整理，理解有疑問時以原文為準。")
+  );
+  main.replaceChildren(col);
+}
+
+function chapterHeader(ch){
+  return [
+    el("div",{class:"eyebrow"}, `${partOf(ch.no)}　·　第${CN_NUM(ch.no)}章`),
+    el("h1",null, ch.title),
+    el("div",{class:"meta"},
+      el("span",null,`原文在網頁版${VOL_NAME(ch.vol)}`),
+      el("a",{href:READER(ch.vol),target:"_blank",rel:"noopener"},"開啟大慈恩月光藏原文 ↗"))
+  ];
+}
+
+function renderUnbuilt(ch){
+  main.replaceChildren(el("div",{class:"col"},
+    ...chapterHeader(ch),
+    el("div",{class:"note",style:"margin-top:22px"},
+      el("p",{style:"margin-top:0"},el("b",null,"這一章還沒建置。")," 章節模板已經預留，內容檔補上後就會出現下面五個分頁。"),
+      el("p",{style:"margin-bottom:0"},"要建置時，跟 Claude 說「建置第 "+ch.no+" 章」，它會依原文產生 chapters/"+ch.id+".json。")),
+    el("div",{class:"ghost-tabs"}, ...TABS.map(t=>el("span",null,t[1])))
+  ));
+}
+
+async function renderChapter(ch){
+  const col = el("div",{class:"col"}, ...chapterHeader(ch));
+  const tabs = el("div",{class:"tabs",role:"tablist"});
+  for (const [key,label] of TABS){
+    tabs.append(el("button",{role:"tab","aria-selected":route.tab===key?"true":"false",onclick:()=>go(ch.id,key)},label));
+  }
+  const body = el("div",{role:"tabpanel"}, el("p",{class:"muted"},"載入中…"));
+  col.append(tabs, body);
+  main.replaceChildren(col);
+  let data;
+  try { data = await loadChapter(ch.id); }
+  catch { body.replaceChildren(el("p",{class:"note"},"這一章的內容檔讀取失敗。重新整理頁面再試一次。")); return; }
+  if (route.page!==ch.id) return;
+  const fn = { overview:tabOverview, terms:tabTerms, drills:tabDrills, quiz:tabQuiz, debate:tabDebate }[route.tab];
+  body.replaceChildren(...[fn(ch,data)].flat());
+}
+
+/* 導讀 */
+function tabOverview(ch, d){
+  const o = d.overview, c = chp(ch.id);
+  const cb = el("input",{type:"checkbox",id:"readSrc"}); cb.checked = !!c.readSource;
+  cb.onchange = ()=>{ c.readSource = cb.checked; save(); };
+  return [
+    el("p",{class:"lead"},o.lead),
+    el("h2",null,"這一章要學會的事"),
+    el("ul",{class:"clean"}, ...o.points.map(p=>el("li",null,p))),
+    el("h2",null,"原文的結構"),
+    el("div",{class:"steps"}, ...o.structure.map((s,i)=>el("div",{class:"step"},el("b",{class:"n"},CN_NUM(i+1)),el("div",null,el("div",{class:"name"},s.name),el("div",{class:"small muted"},s.desc))))),
+    el("h2",null,"建議的讀法"),
+    el("ol",{class:"clean"}, ...o.tips.map(t=>el("li",null,t))),
+    el("div",{class:"checkrow"}, cb, el("label",{for:"readSrc"},"我已讀完這一章的原文"), el("a",{href:READER(ch.vol),target:"_blank",rel:"noopener",class:"small"},"開啟原文 ↗"))
+  ];
+}
+
+/* 名相 */
+function treeNode(n, root){
+  const kids = [];
+  const h = el("div",{class:"node-h"}, el("span",{class:"node-t"},n.t), n.d && el("span",{class:"def"},n.d));
+  kids.push(h);
+  if (n.s) kids.push(el("div",{class:"syn"},n.s));
+  if (n.items) kids.push(el("div",{class:"chips"}, ...n.items.map(i=>el("span",{class:"chip"},i))));
+  if (n.e) kids.push(el("div",{class:"eg"},n.e));
+  if (n.note) kids.push(el("div",{class:"nt"},n.note));
+  for (const c of n.c||[]) kids.push(treeNode(c,false));
+  return el("div",{class:"node"+(root?" root":"")}, ...kids);
+}
+function collectDefs(n, out=[]){ if (n.d) out.push([n.t,n.d]); (n.c||[]).forEach(c=>collectDefs(c,out)); return out; }
+function tabTerms(ch, d){
+  const out = [ el("h2",{style:"margin-top:1em"},"分類樹"), el("div",{class:"tree"}, treeNode(d.tree,true)) ];
+  if (d.fourfold){
+    const f = d.fourfold, cs = f.cases;
+    out.push(el("h2",null,f.title),
+      el("div",{class:"four"},
+        el("div",{class:"hd"}), el("div",{class:"hd"},`是${f.b}`), el("div",{class:"hd"},`不是${f.b}`),
+        el("div",{class:"hd"},`是${f.a}`), el("div",{class:"cell"},el("b",null,cs[2].label),cs[2].eg), el("div",{class:"cell"},el("b",null,cs[0].label),cs[0].eg),
+        el("div",{class:"hd"},`不是${f.a}`), el("div",{class:"cell"},el("b",null,cs[1].label),cs[1].eg), el("div",{class:"cell"},el("b",null,cs[3].label),cs[3].eg)));
+  }
+  out.push(el("h2",null,"性相一覽"),
+    el("div",{class:"tbl-wrap"}, el("table",{class:"defs"}, el("tbody",null, ...collectDefs(d.tree).map(([t,v])=>el("tr",null,el("td",null,t),el("td",null,v)))))));
+  return out;
+}
+
+/* 論式演練 */
+function tabDrills(ch, d){
+  const c = chp(ch.id);
+  const all = d.drills.flatMap(s=>s.items);
+  let onlyWrong = false;
+  const stat = el("span",{class:"stat"});
+  const list = el("div");
+  const updStat = ()=>{ const done = all.filter(i=>c.drills[i.id]).length, ok = all.filter(i=>c.drills[i.id]==="ok").length; stat.textContent = `已答 ${done} / ${all.length}，答對 ${ok}`; };
+  const draw = ()=>{
+    list.replaceChildren(...d.drills.map(sec=>{
+      const items = sec.items.filter(i=>!onlyWrong || c.drills[i.id]==="bad");
+      if (!items.length) return null;
+      return el("div",{class:"drill-sec"},
+        el("h3",null, el("span",null,sec.sec), el("span",{class:"claim"},sec.claim)),
+        ...items.map(it=>{
+          const [btns, fb] = answerButtons(it.a, ok=>{
+            c.drills[it.id] = ok?"ok":"bad"; save(); updStat();
+            fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
+          });
+          return el("div",{class:"drill"}, argCard(it.s,it.p,it.r), btns, fb);
+        }));
+    }));
+    if (!list.childElementCount) list.append(el("p",{class:"note"},"目前沒有答錯的論式。"));
+  };
+  const toggle = el("button",{class:"btn ghost",type:"button"},"只看答錯的");
+  toggle.onclick = ()=>{ onlyWrong=!onlyWrong; toggle.textContent = onlyWrong?"顯示全部":"只看答錯的"; draw(); };
+  const reset = el("button",{class:"btn ghost",type:"button"},"清除作答紀錄");
+  reset.onclick = ()=>{ c.drills = {}; save(); updStat(); draw(); };
+  updStat(); draw();
+  return [
+    el("p",{class:"muted small",style:"margin-top:1em"},"依原文段落排列。先判斷宗，再判斷因。每題答完會顯示解說，這裡不計分。"),
+    el("div",{class:"toolbar"}, stat, toggle, reset),
+    list
+  ];
+}
+
+/* 測驗 */
+function tabQuiz(ch, d){
+  const c = chp(ch.id);
+  const box = el("div",{style:"margin-top:1em"});
+  const start = (pool)=>{
+    const items = shuffle(pool).slice(0, 10);
+    let idx = 0, right = 0; const wrong = [];
+    const step = ()=>{
+      if (idx >= items.length) return finish();
+      const q = items[idx];
+      const card = el("div",{class:"qcard"},
+        el("div",{class:"qhead"}, el("span",null,`第 ${idx+1} / ${items.length} 題`), el("span",null,`答對 ${right}`)),
+        el("div",{class:"qprog"}, el("i",{style:`width:${idx/items.length*100}%`})));
+      const fb = el("div");
+      const next = el("button",{class:"btn",type:"button",hidden:true}, idx+1<items.length?"下一題":"看結果");
+      next.onclick = ()=>{ idx++; step(); };
+      const mark = ok=>{ if(ok) right++; else wrong.push(q); fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); next.hidden=false; next.focus(); };
+      if (q.type==="resp"){
+        card.append(el("div",{class:"qtext"},"這個論式應當怎麼回答？"), argCard(q.s,q.p,q.r));
+        const [btns] = answerButtons(q.a, ok=>mark(ok)); card.append(btns);
+      } else {
+        card.append(el("div",{class:"qtext"}, q.type==="tf" ? "判斷對錯：" + q.q : q.q));
+        const opts = q.type==="tf" ? [["對",true],["錯",false]] : (q.fixed ? q.o.map((t,i)=>[t,i]) : shuffle(q.o.map((t,i)=>[t,i])));
+        const wrap = el("div",{class:"opts"});
+        for (const [label,val] of opts){
+          const b = el("button",{class:"opt",type:"button"},label);
+          b.onclick = ()=>{
+            wrap.querySelectorAll("button").forEach(x=>{ x.disabled=true; if (x.dataset.v===String(q.a)) x.classList.add("right"); });
+            const ok = val===q.a; if (!ok) b.classList.add("wrong"); mark(ok);
+          };
+          b.dataset.v = String(val); wrap.append(b);
+        }
+        card.append(wrap);
+      }
+      card.append(fb, el("div",{class:"toolbar"},next));
+      box.replaceChildren(card);
+    };
+    const finish = ()=>{
+      const score = Math.round(right/items.length*100);
+      c.quiz.attempts = (c.quiz.attempts||0)+1; c.quiz.last = score;
+      c.quiz.best = Math.max(c.quiz.best ?? 0, score);
+      const wrongIds = new Set(c.quiz.wrong||[]);
+      items.forEach(q=>{ if (wrong.includes(q)) wrongIds.add(q.id); else wrongIds.delete(q.id); });
+      c.quiz.wrong = [...wrongIds]; save();
+      box.replaceChildren(el("div",{class:"qcard"},
+        el("div",{class:"score"}, score, el("span",{class:"small muted"}," 分")),
+        el("p",null, score>=80 ? "達到 80 分，這一章標記為完成。" : "80 分以上算完成這一章。先看下面的錯題解說，再測一次。"),
+        el("div",{class:"toolbar"},
+          el("button",{class:"btn",type:"button",onclick:()=>start(d.quiz)},"再測一次"),
+          c.quiz.wrong.length ? el("button",{class:"btn ghost",type:"button",onclick:()=>start(d.quiz.filter(q=>c.quiz.wrong.includes(q.id)))},`錯題複習（${c.quiz.wrong.length}）`) : null),
+        wrong.length ? el("div",{class:"wronglist"}, ...wrong.map(q=>el("div",{class:"item"},
+          el("div",null, el("b",null, q.type==="resp" ? `${q.s}有法，應當${q.p}，因為${q.r}的緣故。` : q.q)),
+          el("div",{class:"muted"}, "正解：", q.type==="resp"?q.a : q.type==="tf" ? (q.a?"對":"錯") : q.o[q.a], "。", q.x)))) : null));
+    };
+    step();
+  };
+  const intro = el("div",{class:"qcard"},
+    el("p",{style:"margin-top:0"},`題庫共 ${d.quiz.length} 題，每回隨機抽 10 題：性相、分類、四句，以及論式應答。`),
+    el("p",{class:"stat"}, c.quiz.attempts ? `最高 ${c.quiz.best} 分・上次 ${c.quiz.last} 分・已測 ${c.quiz.attempts} 次` : "還沒測過。"),
+    el("div",{class:"toolbar"},
+      el("button",{class:"btn",type:"button",onclick:()=>start(d.quiz)},"開始測驗"),
+      (c.quiz.wrong||[]).length ? el("button",{class:"btn ghost",type:"button",onclick:()=>start(d.quiz.filter(q=>c.quiz.wrong.includes(q.id)))},`錯題複習（${c.quiz.wrong.length}）`) : null));
+  box.append(intro);
+  return box;
+}
+
+/* AI 辯論 */
+const debateState = {};   // per chapter: {mode, turns:{debate:[],ask:[]}, busy, ctl}
+function rulesFor(ch, d, mode){
+  if (mode==="ask") return `你是《賽倉攝類學》的學習助教，正在協助一位自學者讀第${ch.no}章〈${ch.title}〉。
+以下是本章要點，回答以此為準：
+${d.ai.notes}
+
+回答規則：用繁體中文，簡潔清楚，先直接回答再補充理由；需要時用本章的事例說明。若問題超出本章要點或你不確定，就直說，並建議對照原文。不要編造書中沒有的名相或出處。`;
+  return `你現在扮演藏傳寺院辯經場上的「立宗者（問難者）」，用《賽倉攝類學》第${ch.no}章〈${ch.title}〉和一位自學的學生練習辯論。學生是「答辯者」。
+
+以下是本章的要點，是你判斷對錯的唯一依據：
+${d.ai.notes}
+
+辯論規則：
+1. 每次只提出一個應成論式，格式固定：「X有法，應當是Y，因為是Z的緣故。」否定句寫「應當不是Y」。
+2. 學生會回答「承許」「因不成」「不遍」其中之一，可能附上理由。正確答法：先看宗，宗成立就承許；宗不成立時，因在有法上不成立答因不成，因成立答不遍。
+3. 你先用一兩句話判斷學生答得對不對、為什麼。答對時，依辯經程序往下追問：學生答「因不成」，你就提出成立該因的論式或換角度追問；答「不遍」，請他舉出反例，或提出下一個相關論式；答「承許」而且承許得對，就問更進一步的論式；承許錯了，就用「如果承許的話……」引出與自宗相違之處。答錯時，指出錯在哪一層分類，再給一個較簡單的論式讓他重來。
+4. 由淺入深，涵蓋本章的他宗錯誤、自宗分類與斷諍中的名稱陷阱。可以用書中事例，也可以用同類的新事例，但只出本章要點能判斷的內容。
+5. 用繁體中文，語氣像嚴格而慈悲的師兄，簡短，每次回覆不超過 120 字（論式不計）。
+6. 每次回覆的最後一行一定是下一個論式，以「【論式】」開頭，例如：
+【論式】白法螺的顏色有法，應當是紅色，因為是顏色的緣故。
+7. 如果學生是在提問而不是回答，簡短回答後再給論式。`;
+}
+function parseReply(text){
+  const i = text.lastIndexOf("【論式】");
+  if (i<0) return { body:text.trim(), arg:null };
+  const line = text.slice(i+4).split("\n")[0].trim();
+  const m = line.match(/^(.+?)有法[，,]\s*應當(.+?)[，,]\s*因為(.+?)的緣故/);
+  return { body:text.slice(0,i).trim(), arg: m ? {s:m[1].trim(), p:m[2].trim(), r:m[3].trim()} : null, raw: line };
+}
+const ERR = {
+  not_granted:"這個頁面沒有取得使用 Claude 的許可，AI 功能已關閉。其他分頁不受影響。",
+  sampling_disabled:"你的帳號目前無法從頁面使用 Claude。",
+  rate_limited:"請求太頻繁或已達用量上限，請稍後再按一次。",
+  session_expired:"登入已過期，請重新登入 claude.ai。",
+  refused:"這一則沒有得到回覆，換個說法再試。",
+  prompt_too_large:"對話太長了，按「重新開始」再試。",
+};
+function tabDebate(ch, d){
+  const st = debateState[ch.id] ||= { mode:"debate", turns:{debate:[],ask:[]}, busy:false, tier:"default" };
+  const wrap = el("div",{style:"margin-top:1em"});
+  const log = el("div",{class:"log","aria-live":"polite"});
+  const note = el("div");
+  const modeBtns = el("div",{class:"modes",role:"group","aria-label":"模式"});
+  let sample = null;
+
+  const drawMsg = (m)=>{
+    if (m.role==="user" && m.hidden) return null;
+    if (m.role==="user") return el("div",{class:"msg me"}, el("span",{class:"who"},"我"), m.content);
+    const pr = st.mode==="debate" ? parseReply(m.content) : { body:m.content, arg:null };
+    return el("div",{class:"msg ai"}, el("span",{class:"who"}, st.mode==="debate"?"立宗者":"助教"),
+      pr.body || null,
+      pr.arg ? argCard(pr.arg.s, pr.arg.p, pr.arg.r) : (pr.raw ? el("div",{class:"arg"},pr.raw) : null));
+  };
+  const drawLog = ()=>{
+    const turns = st.turns[st.mode];
+    log.replaceChildren(...turns.map(drawMsg).filter(Boolean));
+    if (!turns.length) log.append(el("div",{class:"note"},
+      st.mode==="debate" ? "按「開始辯論」，立宗者會出第一個論式。你可以直接按承許、因不成、不遍，也可以在框裡補上理由。" : "問任何關於這一章的問題，例如：「支分色和八種支分色有什麼差別？」"));
+  };
+
+  const text = el("textarea",{id:"debateInput",placeholder: "補充理由或提問（可留空）"});
+  const tierSel = el("select",{id:"tierSel","aria-label":"回覆模式"}, el("option",{value:"default"},"標準（較準）"), el("option",{value:"quick"},"快速"));
+  tierSel.value = st.tier; tierSel.onchange = ()=>{ st.tier = tierSel.value; };
+  const quick = el("div",{class:"answers"});
+  const sendBtn = el("button",{class:"btn",type:"button"},"送出");
+  const startBtn = el("button",{class:"btn",type:"button"},"開始辯論");
+  const judgeBtn = el("button",{class:"btn ghost",type:"button"},"結束並總評");
+  const stopBtn = el("button",{class:"btn ghost",type:"button",hidden:true},"停止");
+  const resetBtn = el("button",{class:"btn ghost",type:"button"},"重新開始");
+
+  const setBusy = b=>{ st.busy=b; [sendBtn,startBtn,judgeBtn,resetBtn,...quick.querySelectorAll("button")].forEach(x=>x.disabled=b); stopBtn.hidden=!b; };
+  const refreshControls = ()=>{
+    const turns = st.turns[st.mode];
+    const started = turns.length>0;
+    startBtn.hidden = st.mode!=="debate" || started;
+    quick.hidden = st.mode!=="debate" || !started;
+    judgeBtn.hidden = st.mode!=="debate" || !started;
+    text.placeholder = st.mode==="debate" ? "補充理由（可留空），或直接輸入回答" : "輸入你的問題";
+    modeBtns.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.m===st.mode));
+  };
+
+  const ask = async (userText, {hidden=false}={})=>{
+    if (!sample || st.busy) return;
+    const turns = st.turns[st.mode];
+    turns.push({role:"user", content:userText, hidden});
+    const bubble = el("div",{class:"msg ai"}, el("span",{class:"who"}, st.mode==="debate"?"立宗者":"助教"), el("span",{class:"thinking"},"思考中…"));
+    drawLog(); log.append(bubble); bubble.scrollIntoView({block:"nearest"});
+    setBusy(true); note.replaceChildren();
+    st.ctl = new AbortController();
+    const rules = rulesFor(ch, d, st.mode);
+    const recent = turns.slice(-24).map(t=>({role:t.role, content:t.content}));
+    if (recent[0]?.role !== "user") recent.shift();
+    const input = [{role:"user", content:rules}, ...recent];
+    try {
+      const res = await sample(input, { cache:false, modelTier:st.tier, signal:st.ctl.signal,
+        onText:({text})=>{ bubble.replaceChildren(el("span",{class:"who"}, st.mode==="debate"?"立宗者":"助教"), text); } });
+      turns.push({role:"assistant", content:res.text});
+      if (st.mode==="debate" && turns.filter(t=>t.role==="assistant").length===1){ chp(ch.id).debates = (chp(ch.id).debates||0)+1; save(); }
+      if (res.truncated) note.replaceChildren(el("p",{class:"small muted"},"回覆被截斷了，可以請它說短一點。"));
+    } catch(e){
+      if (e?.text) turns.push({role:"assistant", content:e.text});
+      else turns.pop();
+      if (e?.code!=="cancelled") note.replaceChildren(el("p",{class:"note"}, ERR[e?.code] || "連線中斷了，再按一次試試。"));
+      if (e?.code==="not_granted" || e?.code==="sampling_disabled") sample = null;
+    } finally { setBusy(false); drawLog(); refreshControls(); }
+  };
+
+  for (const opt of ["承許","因不成","不遍"]){
+    quick.append(el("button",{type:"button",onclick:()=>{ const extra=text.value.trim(); text.value=""; ask(extra ? `${opt}。${extra}` : opt); }}, opt));
+  }
+  sendBtn.onclick = ()=>{ const v=text.value.trim(); if(!v) return; text.value=""; ask(v); };
+  text.addEventListener("keydown", e=>{ if (e.key==="Enter" && (e.ctrlKey||e.metaKey)) sendBtn.click(); });
+  startBtn.onclick = ()=>ask("請開始第一個論式。", {hidden:true});
+  judgeBtn.onclick = ()=>ask("（辯論到此結束。請不要再出論式，改為總評：我答對與答錯的類型、最需要加強的一兩個觀念、建議回去重讀的段落。150 字內。）", {hidden:true});
+  stopBtn.onclick = ()=>st.ctl?.abort();
+  resetBtn.onclick = ()=>{ st.turns[st.mode] = []; drawLog(); refreshControls(); note.replaceChildren(); };
+  for (const [m,label] of [["debate","我來答辯"],["ask","自由提問"]]){
+    const b = el("button",{type:"button","data-m":m},label);
+    b.onclick = ()=>{ if (st.busy) return; st.mode=m; drawLog(); refreshControls(); };
+    modeBtns.append(b);
+  }
+
+  const composer = el("div",{class:"composer"},
+    quick,
+    el("div",{class:"row"}, text),
+    el("div",{class:"row"}, startBtn, sendBtn, judgeBtn, stopBtn, resetBtn, el("span",{class:"spacer",style:"flex:1"}), tierSel));
+  wrap.append(
+    el("p",{class:"muted small"},"立宗者只依本章要點出題與判斷。辯論會使用你自己的 Claude 用量；第一次使用時 claude.ai 會詢問是否允許。"),
+    modeBtns, log, note, composer);
+  drawLog(); refreshControls();
+
+  composer.hidden = true;
+  const avail = el("div",{class:"note"},"正在連線 Claude…");
+  wrap.insertBefore(avail, composer);
+  (async ()=>{
+    sample = window.claude?.use ? await claude.use("sample") : null;
+    if (sample){ avail.remove(); composer.hidden = false; }
+    else avail.textContent = "AI 辯論需要在 claude.ai 上開啟這個頁面才能使用。導讀、名相、演練、測驗都不受影響。";
+  })();
+  return wrap;
+}
+
+parseHash(); render();
+</script>
+</body></html>
