@@ -257,6 +257,50 @@ table.grid td.nowrap{white-space:nowrap;font-weight:700}
 .nb-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.8rem;color:var(--muted)}
 .nb-legend>span{display:inline-flex;align-items:center;gap:6px}
 
+/* 動畫 */
+.an{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px 12px}
+.an-svg{width:100%;height:auto;display:block;cursor:pointer;max-height:72vh}
+.an .sh{opacity:0;transition:opacity .45s ease,transform .8s cubic-bezier(.3,.7,.3,1)}
+.an .sh.on{opacity:1}
+.an .sh.on.dim{opacity:.25}
+.an rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5;transition:stroke .3s,fill .3s}
+.an .t-b>rect{fill:var(--bg)}
+.an .t-acc>rect{fill:var(--maroon-soft);stroke:var(--maroon)}
+.an .t-sf>rect{fill:var(--saffron-soft);stroke:var(--saffron)}
+.an .dashed>rect{stroke-dasharray:5 4}
+.an .hl>rect{stroke:var(--maroon);stroke-width:3.2}
+.an .k-chip.hl>rect{fill:var(--maroon-soft)}
+.an text{fill:var(--fg);font-family:var(--f-body)}
+.an .lbl{font-size:11.5px;font-weight:700}
+.an .nlbl{font-size:13.5px;font-weight:700;font-family:var(--f-display)}
+.an .nsub{font-size:9.5px;fill:var(--maroon);font-family:var(--f-kai)}
+.an .clbl{font-size:11px;font-family:var(--f-kai)}
+.an .k-dot circle{fill:var(--saffron)}
+.an .dlbl{font-size:10.5px;font-weight:700}
+.an .k-mark circle{stroke-width:1.5}
+.an .k-mark.t-ok circle{fill:var(--ok-soft);stroke:var(--ok)}
+.an .k-mark.t-bad circle{fill:var(--bad-soft);stroke:var(--bad)}
+.an .mk{font-size:13px;font-weight:900}
+.an .t-ok .mk{fill:var(--ok)}
+.an .t-bad .mk{fill:var(--bad)}
+.an .k-arrow line{stroke:var(--muted);stroke-width:1.6}
+.an .k-arrow polygon{fill:var(--muted)}
+.an .k-arrow.t-acc line{stroke:var(--maroon)} .an .k-arrow.t-acc polygon{fill:var(--maroon)}
+.an .k-arrow.t-ok line{stroke:var(--ok);stroke-width:2.2} .an .k-arrow.t-ok polygon{fill:var(--ok)}
+.an .k-arrow.t-bad line{stroke:var(--bad);stroke-width:2.2} .an .k-arrow.t-bad polygon{fill:var(--bad)}
+.an .k-arrow.dashed line{stroke-dasharray:6 4}
+.an .k-text.t-acc text{fill:var(--maroon)}
+.an .k-text.t-bad text{fill:var(--bad);font-weight:700}
+.an .k-text.t-sf text{fill:var(--saffron);font-weight:700}
+.an-cap{min-height:3.3em;margin:10px 0 0;font-size:1rem;line-height:1.65}
+.an-count{font-variant-numeric:tabular-nums;color:var(--saffron);font-weight:700;margin-right:.6em;font-size:.85rem}
+.an-ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.an-ctrl .btn{padding:5px 12px;font-size:.9rem}
+.an-dots{display:flex;gap:5px;margin-left:auto}
+.an-dots i{width:7px;height:7px;border-radius:50%;background:var(--surface-2)}
+.an-dots i.on{background:var(--maroon)}
+@media (prefers-reduced-motion:reduce){.an .sh{transition:none}}
+
 /* 精讀 */
 .mainline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
 .ml-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;min-width:0}
@@ -716,6 +760,7 @@ function renderBlock(ch, d, b){
       el("tbody",null, ...b.rows.map(r=>el("tr",null, ...r.map(v=>el("td",null,v))))))));
     if (b.note) box.append(el("p",{class:"small muted"}, b.note));
   }
+  if (b.type==="anim") box.append(animBlock(b));
   if (b.type==="kepan") box.append(el("div",{class:"kp-wrap"}, kpNode(d.tree)));
   if (b.type==="fourfold") box.append(fourGrid(d.fourfold));
   if (b.type==="nest") box.append(nestBox(d.nest, 0), nestLegend());
@@ -728,6 +773,79 @@ function renderBlock(ch, d, b){
   }
   return box;
 }
+/* 動畫: declarative SVG scenes. Each step shows/hides/highlights/moves shapes; state is rebuilt from step 0 so 上一步 always works. */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, ...kids){ const e = document.createElementNS(SVGNS, tag); for (const [k,v] of Object.entries(attrs||{})) if (v!=null) e.setAttribute(k, v); kids.forEach(k=>e.append(k)); return e; }
+function svText(txt, attrs){ const t = sv("text", attrs); t.textContent = txt; return t; }
+function drawShape(sh){
+  const g = sv("g",{class:`sh k-${sh.kind} t-${sh.tone||"base"}${sh.dash?" dashed":""}`});
+  if (sh.kind==="box"){ g.append(sv("rect",{width:sh.w,height:sh.h,rx:10}), svText(sh.label,{x:10,y:18,class:"lbl"})); }
+  if (sh.kind==="node"){
+    g.append(sv("rect",{width:sh.w,height:sh.h,rx:8}), svText(sh.label,{x:sh.w/2,y:sh.sub?sh.h/2-2:sh.h/2+5,"text-anchor":"middle",class:"nlbl"}));
+    if (sh.sub) g.append(svText(sh.sub,{x:sh.w/2,y:sh.h/2+12,"text-anchor":"middle",class:"nsub"}));
+  }
+  if (sh.kind==="chip"){ const w = [...sh.text].length*11+12; g.append(sv("rect",{width:w,height:20,rx:5}), svText(sh.text,{x:w/2,y:14,"text-anchor":"middle",class:"clbl"})); }
+  if (sh.kind==="dot"){ g.append(sv("circle",{r:5.5}), svText(sh.text,{x:10,y:4,class:"dlbl"})); }
+  if (sh.kind==="mark"){ g.append(sv("circle",{r:10}), svText(sh.tone==="ok"?"✓":"✕",{y:5,"text-anchor":"middle",class:"mk"})); }
+  if (sh.kind==="text"){ g.append(svText(sh.text,{"text-anchor":sh.anchor||"start",class:"txt","font-size":sh.size||12})); }
+  if (sh.kind==="arrow"){
+    const {x1,y1,x2,y2} = sh, a = Math.atan2(y2-y1, x2-x1), L = 7;
+    const p = (ang)=>`${x2 - L*Math.cos(a+ang)},${y2 - L*Math.sin(a+ang)}`;
+    g.append(sv("line",{x1,y1,x2:x2-4*Math.cos(a),y2:y2-4*Math.sin(a)}), sv("polygon",{points:`${x2},${y2} ${p(0.45)} ${p(-0.45)}`}));
+  }
+  return g;
+}
+function animBlock(b){
+  const svg = sv("svg",{viewBox:`0 0 ${b.w||360} ${b.h||300}`,class:"an-svg",role:"img","aria-label":b.title||"動畫"});
+  const ids = b.shapes.map(s=>s.id), nodes = {};
+  // paint containers first so moving cards, dots and marks always stay on top of them
+  const LAYER = {box:0, arrow:1, node:2, chip:3, text:4, dot:5, mark:6};
+  const painted = b.shapes.map((sh,i)=>[sh,i]).sort((p,q)=>(LAYER[p[0].kind]??3)-(LAYER[q[0].kind]??3) || p[1]-q[1]);
+  for (const [sh] of painted){ const g = drawShape(sh); svg.append(g); nodes[sh.id] = {g, sh}; }
+  const expand = list => (list||[]).flatMap(r => r.endsWith("*") ? ids.filter(x=>x.startsWith(r.slice(0,-1))) : [r]);
+  const stateAt = i => {
+    const st = Object.fromEntries(b.shapes.map(s=>[s.id,{on:false,hl:false,dim:false,x:s.x,y:s.y}]));
+    for (let k=0; k<=i; k++){
+      const s = b.steps[k];
+      expand(s.show).forEach(id=>st[id].on=true); expand(s.hide).forEach(id=>st[id].on=false);
+      expand(s.hl).forEach(id=>st[id].hl=true); expand(s.unhl).forEach(id=>st[id].hl=false);
+      expand(s.dim).forEach(id=>st[id].dim=true); expand(s.undim).forEach(id=>st[id].dim=false);
+      for (const [id,[x,y]] of Object.entries(s.move||{})){ st[id].x=x; st[id].y=y; }
+    }
+    return st;
+  };
+  const cap = el("p",{class:"an-cap","aria-live":"polite"});
+  const dots = el("span",{class:"an-dots","aria-hidden":"true"}, ...b.steps.map(()=>el("i")));
+  let cur = 0, timer = null;
+  const show = i => {
+    cur = Math.max(0, Math.min(b.steps.length-1, i));
+    const st = stateAt(cur);
+    for (const [id,{g,sh}] of Object.entries(nodes)){
+      const v = st[id];
+      g.classList.toggle("on", v.on); g.classList.toggle("hl", v.hl); g.classList.toggle("dim", v.dim);
+      if (sh.kind!=="arrow") g.style.transform = `translate(${v.x}px,${v.y}px)`;
+    }
+    cap.replaceChildren(el("span",{class:"an-count"}, `${cur+1} / ${b.steps.length}`), b.steps[cur].cap);
+    [...dots.children].forEach((d,k)=>d.classList.toggle("on", k<=cur));
+    prevB.disabled = cur===0; nextB.disabled = cur===b.steps.length-1;
+  };
+  const stop = ()=>{ clearInterval(timer); timer=null; playB.textContent = "▶ 自動播放"; };
+  const prevB = el("button",{class:"btn ghost",type:"button",onclick:()=>{ stop(); show(cur-1); }},"◀ 上一步");
+  const nextB = el("button",{class:"btn",type:"button",onclick:()=>{ stop(); show(cur+1); }},"下一步 ▶");
+  const playB = el("button",{class:"btn ghost",type:"button"},"▶ 自動播放");
+  playB.onclick = ()=>{
+    if (timer) return stop();
+    if (cur===b.steps.length-1) show(0);
+    playB.textContent = "❚❚ 暫停";
+    timer = setInterval(()=>{ if (!svg.isConnected || cur>=b.steps.length-1) return stop(); show(cur+1); }, 3800);
+  };
+  const againB = el("button",{class:"btn ghost",type:"button",onclick:()=>{ stop(); show(0); }},"⟲ 重來");
+  svg.addEventListener("click", ()=>{ stop(); show(cur+1); });
+  const box = el("div",{class:"an"}, svg, cap, el("div",{class:"an-ctrl"}, prevB, nextB, playB, againB, dots));
+  show(0);
+  return box;
+}
+
 function kpNode(n){
   const label = el("div",{class:"kp-label"}, el("b",null,n.t),
     n.d ? el("span",{class:"kp-def"}, n.d) : null,
