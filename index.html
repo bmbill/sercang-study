@@ -261,7 +261,7 @@ table.grid td.nowrap{white-space:nowrap;font-weight:700}
 .toc-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:22px}
 .toc-h{font-size:.75rem;letter-spacing:.18em;color:var(--muted);font-weight:700;margin-bottom:4px}
 .toc{list-style:none;margin:0;padding:0}
-.toc.l2,.toc.l3{padding-left:1.4em;border-left:1.5px solid var(--line);margin:2px 0 4px .5em}
+.toc.l2,.toc.l3,.toc.l4{padding-left:1.4em;border-left:1.5px solid var(--line);margin:2px 0 4px .5em}
 .toc button{border:0;background:none;padding:3px 4px;text-align:left;font-size:.93rem;line-height:1.5;border-radius:5px}
 .toc button:hover{background:var(--surface-2);color:var(--maroon)}
 .toc.l1>li>button{font-weight:700}
@@ -286,6 +286,32 @@ h4.sec-h{font-size:1rem}
 .practice-h{display:flex;gap:12px;align-items:baseline;font-size:.9rem}
 .practice-h b{color:var(--saffron)}
 .practice .drill{margin-top:10px}
+details.toc-box>summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;list-style:none}
+details.toc-box>summary::-webkit-details-marker{display:none}
+details.toc-box>summary::before{content:"▸";color:var(--maroon);font-size:.9rem;transition:transform .15s}
+details.toc-box[open]>summary::before{transform:rotate(90deg)}
+details.toc-box>summary .toc-h{margin:0;font-size:.85rem;letter-spacing:.1em;color:var(--fg)}
+.toc-count{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+details.toc-box[open]>.toc{margin-top:8px}
+.toc button.here{background:var(--maroon-soft);color:var(--maroon);font-weight:700}
+.toc .tick{color:var(--ok);font-weight:900}
+.toc-note{margin:8px 0 0}
+.page-prog{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.page-prog .meter{flex:1;max-width:220px}
+.page-prog .meter i{background:var(--maroon)}
+.crumb-trail{margin-top:18px}
+.trail .sec-h{color:var(--muted);margin:0 0 .2em}
+.trail.l1 .sec-h{font-size:1.05rem}
+.trail.l2 .sec-h,.trail.l3 .sec-h{font-size:.95rem;padding-left:1em}
+.trail .sec-intro{margin:.2em 0 .6em;padding-left:1em}
+.page .sec.cur{margin-top:14px;padding-top:0;border-top:0;padding-left:0;border-left:0}
+.page .sec.cur>.sec-h{font-size:1.35rem}
+.page-done{margin-top:18px;padding:8px 12px;border-radius:8px;background:var(--surface-2)}
+.page-done.ok{background:var(--ok-soft);color:var(--ok);font-weight:700}
+.pg-btn{display:grid;gap:0;text-align:left;max-width:48%;line-height:1.35;padding:8px 14px}
+.pg-btn small{font-size:.72rem;font-weight:700;opacity:.8}
+.pg-btn span{font-weight:700;font-size:.92rem}
+.pager .pg-btn:last-child{text-align:right;margin-left:auto}
 .checklist .ref{flex:none;border:0;background:var(--maroon-soft);color:var(--maroon);border-radius:5px;padding:0 7px;font-size:.78rem;font-weight:700;margin-top:.25em;font-variant-numeric:tabular-nums}
 
 /* 影片 */
@@ -455,7 +481,7 @@ function status(id){
   if (!BUILT.has(id)) return "unbuilt";
   const c = progress.chapters[id]; if (!c) return "new";
   if ((c.quiz?.best ?? 0) >= 80 && c.unitsTotal && c.unitsDone===c.unitsTotal) return "done";
-  const touched = Object.keys(c.drills||{}).length || c.quiz?.attempts || c.debates || Object.keys(c.checks||{}).length || Object.keys(c.prac||{}).length;
+  const touched = Object.keys(c.drills||{}).length || c.quiz?.attempts || c.debates || Object.keys(c.viewed||{}).length || Object.keys(c.prac||{}).length;
   return touched ? "learning" : "new";
 }
 (async ()=>{
@@ -475,11 +501,12 @@ function status(id){
 let route = { page:"intro", tab:"path" };
 function parseHash(){
   const h = location.hash.replace(/^#/,"");
-  const m = h.match(/^(ch\d\d)(?:-(\w+))?$/);
-  if (m && CHAPTERS.some(c=>c.id===m[1])) route = { page:m[1], tab: m[2] || "path" };
-  else route = { page:"intro", tab:"path" };
+  const m = h.match(/^(ch\d\d)(?:-([a-z]\w*)(?:-p(\d+))?)?$/);
+  if (m && CHAPTERS.some(c=>c.id===m[1])) route = { page:m[1], tab: m[2] || "path", pg: +(m[3] || 0) };
+  else route = { page:"intro", tab:"path", pg:0 };
 }
-function go(page, tab="path"){ location.hash = page==="intro" ? "intro" : (tab==="path" ? page : page+"-"+tab); }
+// pg = page index inside a unit (0 = 單元導覽); units show one 科判 section per page
+function go(page, tab="path", pg=0){ location.hash = page==="intro" ? "intro" : (tab==="path" ? page : page+"-"+tab+(pg ? "-p"+pg : "")); }
 window.addEventListener("hashchange", ()=>{ parseHash(); render(); window.scrollTo(0,0); closeRail(); });
 
 /* ---------- chapter data ---------- */
@@ -577,7 +604,7 @@ function renderIntro(){
       el("li",null,"「如果承許根本論式的宗……」：對方承許了錯誤的宗，立宗者引出矛盾。")),
     el("h2",null,"每一章的學習流程"),
     el("div",{class:"steps"},
-      ...[["學習路線","這一章要學會哪幾件事、原文每一段對應到哪個單元，以及整章的檢核總表。"],["單元","一個單元一個學習目標：先看圖表與說明，再逐段精讀原文的辯論（錯在哪一層、每一步怎麼走），接著小練習，最後用「我能……」清單自我檢核。讀這裡就不必另外翻原文。"],["測驗","每回隨機 10 題，80 分以上算通過；答錯的題目可以單獨複習。單元全部檢核完成、測驗通過，這一章就完成。"],["AI 辯論","Claude 扮演立宗者出論式，你回答，它依本章內容判斷並追問。也可以自由提問。"],["速查","性相一覽、科判圖、範圍圖，複習時隨手查。"]]
+      ...[["學習路線","這一章要學會哪幾件事、原文每一段對應到哪個單元，以及每個單元依科判列出的學習進度。"],["單元","一個單元一個學習目標，依科判分節，一次看一節：圖表與說明、逐段精讀原文的辯論，每節附小練習，全部答對這一節就完成。讀這裡就不必另外翻原文。"],["測驗","每回隨機 10 題，80 分以上算通過；答錯的題目可以單獨複習。各單元的小節都完成、測驗通過，這一章就完成。"],["AI 辯論","Claude 扮演立宗者出論式，你回答，它依本章內容判斷並追問。也可以自由提問。"],["速查","性相一覽、科判圖、範圍圖，複習時隨手查。"]]
       .filter(([n])=>IN_CLAUDE || n!=="AI 辯論").map(([n,d],i)=>el("div",{class:"step"},el("b",{class:"n"},CN_NUM(i+1)),el("div",null,el("div",{class:"name"},n),el("div",{class:"small muted"},d))))),
     el("h2",null,"二十六章進度"),
     el("div",{class:"chgrid"}, ...CHAPTERS.map(c=>{ const st=status(c.id); return el("button",{onclick:()=>go(c.id),class:st==="unbuilt"?"muted":null}, el("span",{class:"no small muted"},c.no), c.title, el("span",{class:"dot "+st})); })),
@@ -600,7 +627,7 @@ function renderUnbuilt(ch){
   main.replaceChildren(el("div",{class:"col"},
     ...chapterHeader(ch),
     el("div",{class:"note",style:"margin-top:22px"},
-      el("p",{style:"margin-top:0"},el("b",null,"這一章還沒建置。")," 建置後會有和第一章相同的學習路線：先看導讀與原文對照，再依學習目標分單元（圖表、逐段精讀、小練習、檢核清單），最後綜合測驗。"),
+      el("p",{style:"margin-top:0"},el("b",null,"這一章還沒建置。")," 建置後會有和第一章相同的學習路線：先看導讀與原文對照，再依學習目標分單元（依科判分節，圖表、逐段精讀、每節小練習），最後綜合測驗。"),
       el("p",{style:"margin-bottom:0"},"要建置時，跟 Claude 說「建置第 "+ch.no+" 章」。")),
     el("div",{class:"ghost-tabs"}, ...["學習路線","單元一","單元二","…","測驗","速查"].map(t=>el("span",null,t)))
   ));
@@ -612,11 +639,15 @@ function chapterTabs(d){
   return [["path","學習路線"], ...d.units.map((u,i)=>[u.id, `${CN_NUM(i+1)}・${u.short}`]),
     ["quiz","測驗"], ...(IN_CLAUDE?[["debate","AI 辯論"]]:[]), ["ref","速查"]];
 }
+// 單元完成＝每一節都完成（小練習全部答對；沒有練習的節看過就算）
+function pageDone(ch, u, P){
+  const items = secItems(P.sec), c = chp(ch.id);
+  return items.length ? items.every(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok") : !!c.viewed?.[u.id]?.[P.ref];
+}
 function unitState(ch, u){
-  const m = chp(ch.id).checks?.[u.id];
-  const checks = m && !Array.isArray(m) ? m : {};
-  const got = u.checklist.filter(item=>checks[item.ref]).length;
-  return { got, n:u.checklist.length, done: got===u.checklist.length };
+  const secs = unitPages(u).filter(p=>p.kind==="sec");
+  const got = secs.filter(P=>pageDone(ch, u, P)).length;
+  return { got, n:secs.length, done: got===secs.length };
 }
 function quizPassed(ch){ return (chp(ch.id).quiz?.best ?? 0) >= 80; }
 function syncChapterMeta(ch, d){
@@ -657,24 +688,6 @@ async function renderChapter(ch){
   if (cur) bar.scrollLeft = cur.offsetLeft - bar.clientWidth/2 + cur.offsetWidth/2;
 }
 
-/* checklist shared by the unit page and the path page; ticks are stored by 科判 ref, so reordering items keeps them */
-function checklistBox(ch, d, u, onChange){
-  const c = chp(ch.id);
-  const list = el("ul",{class:"checklist"});
-  u.checklist.forEach((item,i)=>{
-    const id = `ck-${u.id}-${i}`;
-    const cb = el("input",{type:"checkbox",id});
-    cb.checked = !!(c.checks?.[u.id]?.[item.ref]);
-    cb.onchange = ()=>{
-      c.checks ||= {}; const m = c.checks[u.id] = (c.checks[u.id] && !Array.isArray(c.checks[u.id])) ? c.checks[u.id] : {};
-      m[item.ref] = cb.checked; save(); refreshBar(); onChange?.();
-    };
-    list.append(el("li",null, cb,
-      el("button",{class:"ref",type:"button",title:"回到這一節",onclick:()=>jumpTo(ch, u.id, item.ref)}, item.ref),
-      el("label",{for:id}, item.text)));
-  });
-  return list;
-}
 function meter(got, n){
   return el("span",{class:"meter"}, el("i",{style:`width:${n?got/n*100:0}%`}));
 }
@@ -693,7 +706,7 @@ function tabPath(ch, d){
           el("span",{class:"goal-t"}, u.title),
           el("span",{class:"goal-g"}, u.goal),
           el("span",{class:"goal-s"}, u.source),
-          el("span",{class:"goal-m"}, meter(s.got,s.n), `檢核 ${s.got} / ${s.n}`)));
+          el("span",{class:"goal-m"}, meter(s.got,s.n), `完成 ${s.got} / ${s.n} 節`)));
     }), el("button",{class:"goal"+(quizPassed(ch)?" done":""),type:"button",onclick:()=>go(ch.id,"quiz")},
         el("span",{class:"goal-no"}, quizPassed(ch) ? "✓" : "測"),
         el("span",{class:"goal-body"},
@@ -713,17 +726,14 @@ function tabPath(ch, d){
           el("td",null, el("button",{class:"linkbtn",type:"button",onclick:()=>go(ch.id,r.unit)}, `單元${CN_NUM(i+1)}・${d.units[i].short}`)));
       })))));
 
-  out.push(el("h2",null,"學習檢核總表"));
-  const total = el("p",{class:"stat"});
-  const drawTotal = ()=>{
-    const all = d.units.reduce((a,u)=>{ const s=unitState(ch,u); return [a[0]+s.got, a[1]+s.n]; },[0,0]);
-    total.replaceChildren(meter(all[0],all[1]), ` 已勾選 ${all[0]} / ${all[1]} 項　・　測驗${quizPassed(ch)?"已通過":"未通過"}`);
-  };
-  drawTotal();
-  out.push(el("p",{class:"muted small"},"每一項都是「我能……」的自我檢核。能做到就打勾；單元全部打勾就算完成，四個單元完成且測驗 80 分以上，這一章就完成了。"), total);
+  out.push(el("h2",null,"學習進度"));
+  const all = d.units.reduce((a,u)=>{ const s=unitState(ch,u); return [a[0]+s.got, a[1]+s.n]; },[0,0]);
+  out.push(el("p",{class:"stat"}, meter(all[0],all[1]), ` 已完成 ${all[0]} / ${all[1]} 節　・　測驗${quizPassed(ch)?"已通過":"未通過"}`),
+    el("p",{class:"muted small"},"一節的小練習全部答對，這一節就完成；四個單元的各節都完成、綜合測驗 80 分以上，這一章就完成。展開各單元的科判可以直接跳到那一節。"));
   d.units.forEach((u,i)=>{
-    out.push(el("h3",null, el("button",{class:"linkbtn",type:"button",onclick:()=>go(ch.id,u.id)}, `單元${CN_NUM(i+1)}　${u.title}`)),
-      checklistBox(ch,d,u, ()=>{ drawTotal(); drawGoals(); }));
+    const t = outlineToc(ch, u, null);
+    t.querySelector(".toc-h").textContent = `單元${CN_NUM(i+1)}　${u.title}`;
+    out.push(t);
   });
   out.push(el("div",{class:"toolbar",style:"margin-top:24px"},
     el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,d.units[0].id)},"從單元一開始"),
@@ -731,16 +741,59 @@ function tabPath(ch, d){
   return out;
 }
 
-/* 單元：科判式的小節。一、→（一）→ 1. →(1)，ref 例如 "三(二)1(1)"，也是檢核清單與跨單元連結用的編號 */
+/* 單元：科判式的小節，一頁一節。一、→（一）→ 1. →(1)，ref 例如 "三(二)1(1)"，也是跨單元連結用的編號。
+   頁面順序：單元導覽（目標、影片）→ 每個有內容的小節；一節的小練習全部答對就算完成。 */
 let pendingScroll = null;
 const secId = (uid, ref) => `sec-${uid}-${ref}`;
 function secRef(prefix, no, level){ return level===1 ? no : (level===2 || level===4) ? `${prefix}(${no})` : `${prefix}${no}`; }
 function secLabel(no, level){ return level===1 ? `${no}、` : level===2 ? `（${no}）` : level===3 ? `${no}. ` : `(${no}) `; }
-function jumpTo(ch, uid, ref){
-  const id = secId(uid, ref);
-  if (route.page===ch.id && route.tab===uid){ document.getElementById(id)?.scrollIntoView({block:"start"}); return; }
-  pendingScroll = id; go(ch.id, uid);
+const hasOwn = s => !!((s.blocks && s.blocks.length) || s.practice?.length || s.drills?.length);
+
+// flatten the outline into pages; a heading-only section (only an intro) shows on its first descendant page
+function unitPages(u){
+  const pages = [{kind:"intro"}];
+  const walk = (secs, level, prefix, trail) => {
+    for (const s of secs){
+      const ref = secRef(prefix, s.no, level), node = {sec:s, ref, level};
+      if (hasOwn(s)) pages.push({kind:"sec", ...node, trail:[...trail]});
+      walk(s.children || [], level+1, ref, [...trail, node]);
+    }
+  };
+  walk(u.outline, 1, "", []);
+  return pages;
 }
+function pageOfRef(u, ref){
+  const pages = unitPages(u);
+  const i = pages.findIndex(p => p.kind==="sec" && (p.ref===ref || p.trail.some(t=>t.ref===ref)));
+  return i < 0 ? 0 : i;
+}
+function jumpTo(ch, uid, ref){
+  const d = cache[ch.id], u = d?.units.find(x=>x.id===uid);
+  if (!u) return go(ch.id, uid);
+  go(ch.id, uid, pageOfRef(u, ref));
+}
+
+// 完成：這一節的小練習全部答對；沒有練習的節，看過就算。上層的節看底下各節。
+function secItems(s){ return [...(s.drills||[]).map(id=>["d",id]), ...(s.practice||[]).map(id=>["q",id])]; }
+function secDone(ch, u, s, ref){
+  const c = chp(ch.id);
+  const own = secItems(s);
+  let ok = true;
+  if (own.length) ok = own.every(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok");
+  else if (hasOwn(s)) ok = !!c.viewed?.[u.id]?.[ref];
+  const kids = s.children || [];
+  return ok && kids.every((k)=>secDone(ch, u, k, secRef(ref, k.no, refLevel(ref)+1)));
+}
+function refLevel(ref){ // "三"→1, "三(二)"→2, "三(二)1"→3, "三(二)1(1)"→4
+  if (!ref.includes("(")) return 1;
+  if (/\)$/.test(ref)) return ref.split("(").length-1 >= 2 ? 4 : 2;
+  return 3;
+}
+function markViewed(ch, u, ref){
+  const c = chp(ch.id); c.viewed ||= {}; const m = c.viewed[u.id] ||= {};
+  if (!m[ref]){ m[ref] = true; save(); }
+}
+
 function seeLinks(ch, d, list){
   if (!list?.length) return null;
   return el("div",{class:"see"}, el("span",{class:"see-h"},"延伸"),
@@ -750,15 +803,14 @@ function seeLinks(ch, d, list){
       jumpTo(ch, x.unit, x.ref);
     }}, "→ ", x.label)));
 }
-function practiceBox(ch, d, sec){
+function practiceBox(ch, d, sec, onChange){
   const c = chp(ch.id);
   const dr = (sec.drills||[]).map(id=>d.drills.find(x=>x.id===id)).filter(Boolean);
   const pq = (sec.practice||[]).map(id=>d.quiz.find(x=>x.id===id)).filter(Boolean);
   if (!dr.length && !pq.length) return null;
   const stat = el("span",{class:"stat"});
   const upd = ()=>{ const rec = [...dr.map(x=>c.drills[x.id]), ...pq.map(x=>c.prac?.[x.id])];
-    stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`; };
-  upd();
+    stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`; onChange?.(); };
   const box = el("div",{class:"practice"}, el("div",{class:"practice-h"}, el("b",null,"小練習"), stat));
   for (const it of dr){
     const [btns, fb] = answerButtons(it.a, ok=>{
@@ -778,53 +830,93 @@ function practiceBox(ch, d, sec){
         fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); }),
       fb));
   }
+  upd();
   return box;
 }
-function renderSection(ch, d, u, sec, level, prefix){
-  const ref = secRef(prefix, sec.no, level);
-  const H = level===1 ? "h2" : level===2 ? "h3" : "h4";
-  const node = el("section",{class:`sec l${level}`, id:secId(u.id, ref)},
-    el(H,{class:"sec-h"}, el("span",{class:"sec-no"}, secLabel(sec.no, level)), sec.title),
-    sec.intro ? el("p",{class:"sec-intro"}, sec.intro) : null);
-  for (const b of sec.blocks||[]) node.append(renderBlock(ch, d, b));
-  const see = seeLinks(ch, d, sec.see); if (see) node.append(see);
-  const pr = practiceBox(ch, d, sec); if (pr) node.append(pr);
-  for (const c of sec.children||[]) node.append(renderSection(ch, d, u, c, level+1, ref));
-  return node;
-}
-function outlineToc(ch, u){
+
+// 本單元科判：預設收合；每一節後面顯示 ✓；目前這一節加底色
+function outlineToc(ch, u, curRef){
+  const pages = unitPages(u);
+  const all = [];
   const mk = (secs, level, prefix) => el("ul",{class:"toc l"+level}, ...secs.map(s=>{
-    const ref = secRef(prefix, s.no, level);
-    return el("li",null, el("button",{type:"button",onclick:()=>jumpTo(ch, u.id, ref)}, el("span",{class:"sec-no"}, secLabel(s.no, level)), s.title),
-      s.children?.length && level < 3 ? mk(s.children, level+1, ref) : null);
+    const ref = secRef(prefix, s.no, level), done = secDone(ch, u, s, ref);
+    if (hasOwn(s)) all.push(done);   // 只算有內容的節（和學習路線的「完成 x / n 節」一致）
+    const here = curRef && (curRef===ref);
+    return el("li",null,
+      el("button",{type:"button",class:here?"here":null,"aria-current":here?"true":null,onclick:()=>go(ch.id, u.id, pageOfRef(u, ref))},
+        el("span",{class:"sec-no"}, secLabel(s.no, level)), s.title, done ? el("span",{class:"tick","aria-label":"已完成"}," ✓") : null),
+      s.children?.length ? mk(s.children, level+1, ref) : null);
   }));
-  return el("nav",{class:"toc-box","aria-label":"本單元科判"}, el("div",{class:"toc-h"},"本單元科判"), mk(u.outline, 1, ""));
+  const list = mk(u.outline, 1, "");
+  const n = all.length, got = all.filter(Boolean).length;
+  return el("details",{class:"toc-box"},
+    el("summary",null, el("span",{class:"toc-h"},"本單元科判"), el("span",{class:"toc-count"}, `已完成 ${got} / ${n} 節`), meter(got, n)),
+    list,
+    el("p",{class:"small muted toc-note"},"✓ 表示這一節的小練習都答對了；沒有練習的節，看過就打勾。"));
 }
+
 function tabUnit(ch, d, u){
-  const i = d.units.indexOf(u);
-  const out = [
-    el("div",{class:"unit-head"},
-      el("div",{class:"eyebrow"}, `單元${CN_NUM(i+1)} / ${CN_NUM(d.units.length)}`),
-      el("h2",{class:"unit-title"}, u.title),
+  const i = d.units.indexOf(u), pages = unitPages(u);
+  const pg = Math.min(Math.max(route.pg || 0, 0), pages.length-1), P = pages[pg];
+  const head = el("div",{class:"unit-head"},
+    el("div",{class:"eyebrow"}, `單元${CN_NUM(i+1)} / ${CN_NUM(d.units.length)}`),
+    el("h2",{class:"unit-title"}, u.title));
+  const tocSlot = el("div");
+  const drawToc = ()=>{ const open = tocSlot.firstChild?.open; tocSlot.replaceChildren(outlineToc(ch, u, P.ref)); if (open) tocSlot.firstChild.open = true; };
+  const progress = el("div",{class:"page-prog"}, el("span",null,`第 ${pg+1} / ${pages.length} 頁`), meter(pg+1, pages.length));
+  const body = el("div",{class:"page"});
+  const doneLine = el("p",{class:"page-done small"});
+
+  if (P.kind==="intro"){
+    body.append(
       el("div",{class:"goalbox"}, el("b",null,"學習目標　"), u.goal),
-      el("div",{class:"small muted"}, u.source)),
-    u.video ? renderBlock(ch, d, u.video) : null,
-    outlineToc(ch, u),
-    ...u.outline.map(s=>renderSection(ch, d, u, s, 1, ""))
-  ].filter(Boolean);
+      el("div",{class:"small muted"}, u.source),
+      u.video ? renderBlock(ch, d, u.video) : null,
+      el("p",{class:"muted small"}, `這個單元共 ${pages.length-1} 節，一次看一節。按下方「下一節」開始，或展開上面的「本單元科判」直接跳到想看的地方。`));
+  } else {
+    // 所在位置：上層各節的標題（第一次進到這一支時，連上層的導言一起顯示）
+    const crumbs = el("div",{class:"crumb-trail"});
+    for (const t of P.trail){
+      const firstHere = pageOfRef(u, t.ref) === pg;
+      const H = t.level===1 ? "h2" : t.level===2 ? "h3" : "h4";
+      crumbs.append(el("div",{class:`trail l${t.level}`},
+        el(H,{class:"sec-h"}, el("span",{class:"sec-no"}, secLabel(t.sec.no, t.level)), t.sec.title),
+        firstHere && t.sec.intro ? el("p",{class:"sec-intro"}, t.sec.intro) : null));
+    }
+    const s = P.sec, H = P.level===1 ? "h2" : P.level===2 ? "h3" : "h4";
+    const node = el("section",{class:`sec cur l${P.level}`, id:secId(u.id, P.ref)},
+      el(H,{class:"sec-h"}, el("span",{class:"sec-no"}, secLabel(s.no, P.level)), s.title),
+      s.intro ? el("p",{class:"sec-intro"}, s.intro) : null);
+    for (const b of s.blocks||[]) node.append(renderBlock(ch, d, b));
+    const see = seeLinks(ch, d, s.see); if (see) node.append(see);
+    const drawDone = ()=>{
+      const items = secItems(s);
+      if (!items.length){ doneLine.textContent = "本節沒有小練習，看完就算完成。"; doneLine.className = "page-done small"; return; }
+      const c = chp(ch.id), ok = items.filter(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok").length;
+      doneLine.textContent = ok===items.length ? `本節完成 ✓　小練習 ${ok} / ${items.length} 題都答對了。` : `本節小練習答對 ${ok} / ${items.length} 題，全部答對就完成這一節。`;
+      doneLine.className = "page-done small" + (ok===items.length ? " ok" : "");
+    };
+    const pr = practiceBox(ch, d, s, ()=>{ drawDone(); drawToc(); refreshBar(); });
+    if (pr) node.append(pr);
+    if (!secItems(s).length) markViewed(ch, u, P.ref);
+    drawDone();
+    body.append(crumbs, node);
+  }
+  drawToc();
 
-  const doneNote = el("p",{class:"small"});
-  const drawDone = ()=>{ const s = unitState(ch,u); doneNote.textContent = s.done ? "這個單元完成了。" : `還有 ${s.n-s.got} 項沒打勾。做不到的項目，點前面的編號回到那一節再讀一次。`; };
-  drawDone();
-  out.push(el("section",{class:"sec l1",id:secId(u.id,"檢核")},
-    el("h2",{class:"sec-h"}, el("span",{class:"sec-no"},"✓ "), "本單元檢核"), checklistBox(ch,d,u, drawDone), doneNote));
-
-  const prev = i===0 ? ["path","← 學習路線"] : [d.units[i-1].id, `← 單元${CN_NUM(i)}`];
-  const next = i===d.units.length-1 ? ["quiz","綜合測驗 →"] : [d.units[i+1].id, `單元${CN_NUM(i+2)}・${d.units[i+1].short} →`];
-  out.push(el("div",{class:"pager"},
-    el("button",{class:"btn ghost",type:"button",onclick:()=>go(ch.id,prev[0])}, prev[1]),
-    el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,next[0])}, next[1])));
-  return out;
+  // 上一節／下一節：到頭尾就接到學習路線、上一單元或下一單元
+  const pageName = (x) => x.kind==="intro" ? "單元導覽" : `${x.ref}　${x.sec.title}`;
+  let prev, next;
+  if (pg > 0) prev = [()=>go(ch.id, u.id, pg-1), pageName(pages[pg-1])];
+  else if (i > 0){ const pu = d.units[i-1]; prev = [()=>go(ch.id, pu.id, unitPages(pu).length-1), `單元${CN_NUM(i)}・${pu.short}`]; }
+  else prev = [()=>go(ch.id, "path"), "學習路線"];
+  if (pg < pages.length-1) next = [()=>go(ch.id, u.id, pg+1), pageName(pages[pg+1])];
+  else if (i < d.units.length-1){ const nu = d.units[i+1]; next = [()=>go(ch.id, nu.id, 0), `單元${CN_NUM(i+2)}・${nu.short}`]; }
+  else next = [()=>go(ch.id, "quiz"), "綜合測驗"];
+  const pager = el("div",{class:"pager"},
+    el("button",{class:"btn ghost pg-btn",type:"button",onclick:prev[0]}, el("small",null,"← 上一節"), el("span",null,prev[1])),
+    el("button",{class:"btn pg-btn",type:"button",onclick:next[0]}, el("small",null,"下一節 →"), el("span",null,next[1])));
+  return [head, tocSlot, progress, body, P.kind==="sec" ? doneLine : null, pager].filter(Boolean);
 }
 
 /* content blocks */
