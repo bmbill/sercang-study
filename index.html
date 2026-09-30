@@ -454,7 +454,7 @@ const CHAPTERS = [
   [21,"詮類聲與詮聚聲的單元",13],[22,"遮破法成立法的單元",13],[23,"遣餘法的單元",13],[24,"大相違相係屬的單元",14],
   [25,"大應成的單元",14],[26,"大因果的單元",14]
 ].map(([no,title,vol])=>({no,title,vol,id:"ch"+String(no).padStart(2,"0")}));
-const BUILT = new Set(["ch01"]);   // add a chapter id here once chapters/chNN.json exists
+const BUILT = new Set(["ch01","ch02"]);   // add a chapter id here once chapters/chNN.json exists
 const PARTS = [["初級理路",1,8],["中級理路",9,17],["高級理路",18,26]];
 const CN_NUM = n => { const d="〇一二三四五六七八九"; if(n<10) return d[n]; if(n<20) return "十"+(n%10?d[n%10]:""); return d[Math.floor(n/10)]+"十"+(n%10?d[n%10]:""); };
 const partOf = no => PARTS.find(p=>no>=p[1]&&no<=p[2])[0];
@@ -566,10 +566,10 @@ function argCard(s,p,r){
     el("span",{class:"seg p"},el("small",null,"所立法"),el("span",null,p)), "，因為",
     el("span",{class:"seg r"},el("small",null,"因"),el("span",null,r)), "的緣故。");
 }
-function answerButtons(correct, onPick){
+function answerButtons(correct, onPick, opts){
   const wrap = el("div",{class:"answers"});
   const fb = el("div");
-  for (const opt of ["承許","因不成","不遍"]){
+  for (const opt of (opts || ["承許","因不成","不遍"])){
     const b = el("button",{type:"button"},opt);
     b.onclick = ()=>{
       wrap.querySelectorAll("button").forEach(x=>{ x.disabled=true; if(x.textContent===correct) x.classList.add("right"); });
@@ -900,7 +900,7 @@ function practiceBox(ch, d, sec, onChange){
     const [btns, fb] = answerButtons(it.a, ok=>{
       c.drills[it.id] = ok?"ok":"bad"; save(); upd();
       fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
-    });
+    }, it.opts);
     const prev = c.drills[it.id];
     box.append(el("div",{class:"drill"},
       el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prev ? el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯") : null),
@@ -1025,7 +1025,7 @@ function renderBlock(ch, d, b){
   if (b.type==="anim") box.append(animBlock(b));
   if (b.type==="kepan") box.append(el("div",{class:"kp-wrap"}, kpNode(d.tree)));
   if (b.type==="fourfold") box.append(fourGrid(d.fourfold));
-  if (b.type==="nest") box.append(nestBox(d.nest, 0), nestLegend());
+  if (b.type==="nest") box.append(nestBox(d.nest, 0), nestLegend(d.nest));
   if (b.type==="flow") box.append(el("ol",{class:"flow-steps"}, ...b.items.map(([n,t],i)=>el("li",null,
     el("b",{class:"n"}, CN_NUM(i+1)), el("div",null, el("div",{class:"name"},n), el("div",{class:"small muted"},t))))));
   if (b.type==="sections"){
@@ -1115,11 +1115,13 @@ function kpNode(n){
   const kids = n.c || [];
   return el("div",{class:"kp-node"}, label, kids.length ? el("div",{class:"kp-children"}, ...kids.map(kpNode)) : null);
 }
-function nestLegend(){
+function nestLegend(n){
+  const found = {items:null, extra:null, eg:null};
+  (function scan(x){ for (const k of ["items","extra","eg"]) if (!found[k] && x[k]?.length) found[k] = x[k][0]; (x.c||[]).forEach(scan); })(n);
   return el("div",{class:"nb-legend"},
-    el("span",null, el("span",{class:"chip"},"白"), "書中列舉的項目"),
-    el("span",null, el("span",{class:"chip extra"},"黑色"), "也屬於這一類，但不在清單裡（單元三）"),
-    el("span",null, el("span",{class:"chip eg"},"聲音"), "書中當反例的事物（單元二）"));
+    found.items ? el("span",null, el("span",{class:"chip"},found.items), "書中列舉的項目") : null,
+    found.extra ? el("span",null, el("span",{class:"chip extra"},found.extra), "也屬於這一類，但不在清單裡") : null,
+    found.eg ? el("span",null, el("span",{class:"chip eg"},found.eg), "書中的例子") : null);
 }
 function nestBox(n, depth){
   const inner = [...(n.c||[]).map(x=>nestBox(x, depth+1)),
@@ -1170,10 +1172,10 @@ function tabRef(ch, d){
     el("h2",null,"性相一覽"),
     el("div",{class:"tbl-wrap"}, el("table",{class:"grid"},
       el("thead",null, el("tr",null, el("th",null,"名相"), el("th",null,"性相"))),
-      el("tbody",null, ...collectDefs(d.tree).map(([t,v])=>el("tr",null, el("td",{class:"nowrap"},t), el("td",{class:"kai"},v)))))),
+      el("tbody",null, ...[...collectDefs(d.tree), ...(d.extraDefs||[])].map(([t,v])=>el("tr",null, el("td",{class:"nowrap"},t), el("td",{class:"kai"},v)))))),
     el("h2",null,"科判圖"), el("div",{class:"kp-wrap"}, kpNode(d.tree)),
     d.fourfold ? [el("h2",null,d.fourfold.title), fourGrid(d.fourfold)] : null,
-    el("h2",null,"範圍圖"), nestBox(d.nest, 0), nestLegend()
+    el("h2",null,"範圍圖"), nestBox(d.nest, 0), nestLegend(d.nest)
   ].flat().filter(Boolean);
 }
 
@@ -1181,7 +1183,7 @@ function tabRef(ch, d){
 // One question (multiple choice, true/false, or a 論式 to answer); calls mark(ok) once.
 function qBody(q, mark){
   if (q.type==="resp"){
-    const [btns] = answerButtons(q.a, ok=>mark(ok));
+    const [btns] = answerButtons(q.a, ok=>mark(ok), q.opts);
     return [el("div",{class:"qtext"},"這個論式應當怎麼回答？"), argCard(q.s,q.p,q.r), btns];
   }
   const opts = q.type==="tf" ? [["對",true],["錯",false]] : (q.fixed ? q.o.map((t,i)=>[t,i]) : shuffle(q.o.map((t,i)=>[t,i])));
@@ -1259,7 +1261,7 @@ ${d.ai.notes}
 
 辯論規則：
 1. 每次只提出一個應成論式，格式固定：「X有法，應當是Y，因為是Z的緣故。」否定句寫「應當不是Y」。
-2. 學生會回答「承許」「因不成」「不遍」其中之一，可能附上理由。正確答法：先看宗，宗成立就承許；宗不成立時，因在有法上不成立答因不成，因成立答不遍。
+2. 學生會回答「承許」「因不成」「不遍」其中之一（第二章起也可能答「相違周遍」），可能附上理由。正確答法：先看宗，宗成立就承許；宗不成立時，因在有法上不成立答因不成，因成立答不遍；因成立而且是因就一定不是所立法，答相違周遍。
 3. 你先用一兩句話判斷學生答得對不對、為什麼。答對時，依辯經程序往下追問：學生答「因不成」，你就提出成立該因的論式或換角度追問；答「不遍」，請他舉出反例，或提出下一個相關論式；答「承許」而且承許得對，就問更進一步的論式；承許錯了，就用「如果承許的話……」引出與自宗相違之處。答錯時，指出錯在哪一層分類，再給一個較簡單的論式讓他重來。
 4. 由淺入深，涵蓋本章的他宗錯誤、自宗分類與斷諍中的名稱陷阱。可以用書中事例，也可以用同類的新事例，但只出本章要點能判斷的內容。
 5. 用繁體中文，語氣像嚴格而慈悲的師兄，簡短，每次回覆不超過 120 字（論式不計）。
@@ -1352,7 +1354,7 @@ function tabDebate(ch, d){
     } finally { setBusy(false); drawLog(); refreshControls(); }
   };
 
-  for (const opt of ["承許","因不成","不遍"]){
+  for (const opt of (d.drills.some(x=>x.opts) ? ["承許","因不成","不遍","相違周遍"] : ["承許","因不成","不遍"])){
     quick.append(el("button",{type:"button",onclick:()=>{ const extra=text.value.trim(); text.value=""; ask(extra ? `${opt}。${extra}` : opt); }}, opt));
   }
   sendBtn.onclick = ()=>{ const v=text.value.trim(); if(!v) return; text.value=""; ask(v); };
