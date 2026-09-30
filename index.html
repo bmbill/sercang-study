@@ -174,6 +174,85 @@ table.defs td:last-child{font-family:var(--f-kai)}
 .composer select{font:inherit;font-size:.85rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);padding:3px 6px}
 .note{font-size:.85rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
 
+/* 學習路線 / 單元 */
+.tabs button .tick{color:var(--ok);font-weight:900;margin-right:4px}
+.goals{display:grid;gap:10px}
+.goal{display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.goal:hover{border-color:var(--maroon)}
+.goal-no{width:2.2em;height:2.2em;border-radius:50%;display:grid;place-items:center;background:var(--maroon-soft);color:var(--maroon);font-family:var(--f-display);font-weight:900}
+.goal.done .goal-no{background:var(--ok-soft);color:var(--ok)}
+.goal-body{display:grid;gap:2px;min-width:0}
+.goal-t{font-weight:700;font-size:1.02rem}
+.goal-g{font-size:.92rem}
+.goal-s{font-size:.8rem;color:var(--muted)}
+.goal-m{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.meter{display:inline-block;width:80px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;vertical-align:middle}
+.meter i{display:block;height:100%;background:var(--ok)}
+.linkbtn{border:0;background:none;padding:0;color:var(--maroon);font-weight:700;text-align:left;text-decoration:underline;text-underline-offset:3px}
+table.grid{border-collapse:collapse;width:100%;font-size:.92rem;background:var(--surface)}
+table.grid th,table.grid td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+table.grid th{background:var(--surface-2);font-size:.82rem;white-space:nowrap}
+table.grid td.kai{font-family:var(--f-kai);font-size:1rem}
+table.grid td.nowrap{white-space:nowrap;font-weight:700}
+.checklist{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
+.checklist li{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.checklist input{width:1.15em;height:1.15em;margin-top:.3em;flex:none;accent-color:var(--ok)}
+.checklist label{cursor:pointer}
+.unit-head{margin-top:1.2em}
+.unit-title{margin-top:.2em;font-size:1.45rem}
+.goalbox{background:var(--saffron-soft);border-radius:8px;padding:8px 12px;margin:6px 0}
+.goalbox b{color:var(--saffron)}
+.block{margin-top:26px}
+.block h3{font-family:var(--f-display);font-size:1.08rem;margin:0 0 .5em}
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+.drill-ctx{font-size:.78rem;color:var(--muted);display:flex;gap:10px;margin-bottom:4px}
+.prev{border-radius:4px;padding:0 6px}
+.prev.ok{background:var(--ok-soft);color:var(--ok)}
+.prev.bad{background:var(--bad-soft);color:var(--bad)}
+.drill{margin-top:14px}
+.part-tag{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-left:auto}
+.flow-steps{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.flow-steps li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.flow-steps .n{font-family:var(--f-display);color:var(--maroon);font-size:1.05rem}
+.flow-steps .name{font-weight:700}
+/* 科判圖: left-to-right bracket tree */
+.kp-wrap{overflow-x:auto;padding:6px 2px 10px}
+.kp-node{display:flex;align-items:center}
+.kp-label{flex:none;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:4px 10px;display:grid;line-height:1.35;max-width:15em}
+.kp-label b{font-family:var(--f-display)}
+.kp-def{font-family:var(--f-kai);font-size:.8rem;color:var(--maroon)}
+.kp-items{font-family:var(--f-kai);font-size:.85rem;color:var(--muted)}
+.kp-wrap>.kp-node>.kp-label{border-color:var(--maroon);background:var(--maroon-soft)}
+.kp-children{position:relative;padding-left:28px;display:flex;flex-direction:column}
+.kp-children::before{content:"";position:absolute;left:0;top:50%;width:12px;border-top:1.5px solid var(--line)}
+.kp-children>.kp-node{position:relative;padding:3px 0}
+.kp-children>.kp-node::before{content:"";position:absolute;left:-16px;top:50%;width:16px;border-top:1.5px solid var(--line)}
+.kp-children>.kp-node::after{content:"";position:absolute;left:-16px;top:0;bottom:0;border-left:1.5px solid var(--line)}
+.kp-children>.kp-node:first-child::after{top:50%}
+.kp-children>.kp-node:last-child::after{bottom:50%}
+.kp-children>.kp-node:only-child::after{display:none}
+.kp-hint{display:none}
+/* phones: the same 科判 read top-down, children indented under their parent */
+@media (max-width:600px){
+  .kp-wrap{overflow-x:visible}
+  .kp-node{flex-direction:column;align-items:flex-start}
+  .kp-label{max-width:100%}
+  .kp-children{padding-left:16px;margin-left:14px}
+  .kp-children::before{display:none}
+  .kp-children>.kp-node::before{top:1.25em;width:14px}
+  .kp-children>.kp-node:first-child::after{top:0}
+  .kp-children>.kp-node:last-child::after{bottom:auto;height:1.25em}
+  .kp-children>.kp-node:only-child::after{display:block}
+}
+/* 範圍圖: nested boxes, outer = 總 */
+.nb{border:1.5px solid var(--line);border-radius:10px;padding:6px 8px 8px;min-width:0}
+.nb.d0{background:var(--surface)}
+.nb.d1{background:var(--bg)}
+.nb-h{font-family:var(--f-display);font-weight:700;font-size:.92rem;display:flex;gap:8px;align-items:baseline}
+.nb-h small{font-family:var(--f-kai);font-weight:400;color:var(--maroon)}
+.nb-in{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:flex-start}
+.nb-in>.nb{flex:1 1 auto}
+
 /* 精讀 */
 .mainline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
 .ml-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;min-width:0}
@@ -261,7 +340,6 @@ const CN_NUM = n => { const d="〇一二三四五六七八九"; if(n<10) return 
 const partOf = no => PARTS.find(p=>no>=p[1]&&no<=p[2])[0];
 // AI 辯論 only exists inside a claude.ai viewer; a copy hosted elsewhere (GitHub Pages) leaves the tab out.
 const IN_CLAUDE = !!(window.claude && window.claude.use);
-const TABS = [["overview","導讀"],["reading","精讀"],["terms","名相"],["drills","論式演練"],["quiz","測驗"],["debate","AI 辯論"]].filter(t=>IN_CLAUDE || t[0]!=="debate");
 
 /* ---------- tiny DOM helper ---------- */
 function el(tag, attrs, ...kids){
@@ -293,8 +371,8 @@ function save(){
 function status(id){
   if (!BUILT.has(id)) return "unbuilt";
   const c = progress.chapters[id]; if (!c) return "new";
-  if ((c.quiz?.best ?? 0) >= 80) return "done";
-  const touched = Object.keys(c.drills||{}).length || c.quiz?.attempts || c.debates || c.readSource;
+  if ((c.quiz?.best ?? 0) >= 80 && c.unitsTotal && c.unitsDone===c.unitsTotal) return "done";
+  const touched = Object.keys(c.drills||{}).length || c.quiz?.attempts || c.debates || Object.keys(c.checks||{}).length || Object.keys(c.prac||{}).length;
   return touched ? "learning" : "new";
 }
 (async ()=>{
@@ -311,14 +389,14 @@ function status(id){
 })();
 
 /* ---------- routing ---------- */
-let route = { page:"intro", tab:"overview" };
+let route = { page:"intro", tab:"path" };
 function parseHash(){
   const h = location.hash.replace(/^#/,"");
   const m = h.match(/^(ch\d\d)(?:-(\w+))?$/);
-  if (m && CHAPTERS.some(c=>c.id===m[1])) route = { page:m[1], tab: TABS.some(t=>t[0]===m[2]) ? m[2] : "overview" };
-  else route = { page:"intro", tab:"overview" };
+  if (m && CHAPTERS.some(c=>c.id===m[1])) route = { page:m[1], tab: m[2] || "path" };
+  else route = { page:"intro", tab:"path" };
 }
-function go(page, tab="overview"){ location.hash = page==="intro" ? "intro" : (tab==="overview" ? page : page+"-"+tab); }
+function go(page, tab="path"){ location.hash = page==="intro" ? "intro" : (tab==="path" ? page : page+"-"+tab); }
 window.addEventListener("hashchange", ()=>{ parseHash(); render(); window.scrollTo(0,0); closeRail(); });
 
 /* ---------- chapter data ---------- */
@@ -351,7 +429,7 @@ function renderRail(){
     el("div",{class:"legend"},
       el("span",null,el("i",{class:"dot"}),"未開始"),
       el("span",null,el("i",{class:"dot learning"}),"學習中"),
-      el("span",null,el("i",{class:"dot done"}),"測驗 80 分以上"))
+      el("span",null,el("i",{class:"dot done"}),"已完成"))
   );
 }
 function renderOverall(){
@@ -416,7 +494,7 @@ function renderIntro(){
       el("li",null,"「如果承許根本論式的宗……」：對方承許了錯誤的宗，立宗者引出矛盾。")),
     el("h2",null,"每一章的學習流程"),
     el("div",{class:"steps"},
-      ...[["導讀","這一章在學什麼、原文分成哪幾段、建議的讀法。"],["精讀","原文逐段整理：每一組他宗錯在分類樹的哪一層、書中的辯論一步步怎麼走，附白話說明。讀這裡就不必另外翻原文。"],["名相","分類樹、性相一覽、四句。先把架構記熟。"],["論式演練","書中的論式逐條練答，不計分，看解說。"],["測驗","每回隨機 10 題，80 分以上算完成這一章；答錯的題目可以單獨複習。"],["AI 辯論","Claude 扮演立宗者出論式，你回答，它依本章內容判斷並追問。也可以自由提問。"]]
+      ...[["學習路線","這一章要學會哪幾件事、原文每一段對應到哪個單元，以及整章的檢核總表。"],["單元","一個單元一個學習目標：先看圖表與說明，再逐段精讀原文的辯論（錯在哪一層、每一步怎麼走），接著小練習，最後用「我能……」清單自我檢核。讀這裡就不必另外翻原文。"],["測驗","每回隨機 10 題，80 分以上算通過；答錯的題目可以單獨複習。單元全部檢核完成、測驗通過，這一章就完成。"],["AI 辯論","Claude 扮演立宗者出論式，你回答，它依本章內容判斷並追問。也可以自由提問。"],["速查","性相一覽、科判圖、範圍圖，複習時隨手查。"]]
       .filter(([n])=>IN_CLAUDE || n!=="AI 辯論").map(([n,d],i)=>el("div",{class:"step"},el("b",{class:"n"},CN_NUM(i+1)),el("div",null,el("div",{class:"name"},n),el("div",{class:"small muted"},d))))),
     el("h2",null,"二十六章進度"),
     el("div",{class:"chgrid"}, ...CHAPTERS.map(c=>{ const st=status(c.id); return el("button",{onclick:()=>go(c.id),class:st==="unbuilt"?"muted":null}, el("span",{class:"no small muted"},c.no), c.title, el("span",{class:"dot "+st})); })),
@@ -439,52 +517,236 @@ function renderUnbuilt(ch){
   main.replaceChildren(el("div",{class:"col"},
     ...chapterHeader(ch),
     el("div",{class:"note",style:"margin-top:22px"},
-      el("p",{style:"margin-top:0"},el("b",null,"這一章還沒建置。")," 章節模板已經預留，內容檔補上後就會出現下面五個分頁。"),
-      el("p",{style:"margin-bottom:0"},"要建置時，跟 Claude 說「建置第 "+ch.no+" 章」，它會依原文產生 chapters/"+ch.id+".json。")),
-    el("div",{class:"ghost-tabs"}, ...TABS.map(t=>el("span",null,t[1])))
+      el("p",{style:"margin-top:0"},el("b",null,"這一章還沒建置。")," 建置後會有和第一章相同的學習路線：先看導讀與原文對照，再依學習目標分單元（圖表、逐段精讀、小練習、檢核清單），最後綜合測驗。"),
+      el("p",{style:"margin-bottom:0"},"要建置時，跟 Claude 說「建置第 "+ch.no+" 章」。")),
+    el("div",{class:"ghost-tabs"}, ...["學習路線","單元一","單元二","…","測驗","速查"].map(t=>el("span",null,t)))
   ));
+}
+
+/* ---------- chapter = learning path + units built from the chapter file ---------- */
+let refreshBar = ()=>{};
+function chapterTabs(d){
+  return [["path","學習路線"], ...d.units.map((u,i)=>[u.id, `${CN_NUM(i+1)}・${u.short}`]),
+    ["quiz","測驗"], ...(IN_CLAUDE?[["debate","AI 辯論"]]:[]), ["ref","速查"]];
+}
+function unitState(ch, u){
+  const checks = chp(ch.id).checks?.[u.id] || [];
+  const got = u.checklist.filter((_,i)=>checks[i]).length;
+  return { got, n:u.checklist.length, done: got===u.checklist.length };
+}
+function quizPassed(ch){ return (chp(ch.id).quiz?.best ?? 0) >= 80; }
+function syncChapterMeta(ch, d){
+  const c = chp(ch.id);
+  const total = d.units.length, done = d.units.filter(u=>unitState(ch,u).done).length;
+  if (c.unitsTotal!==total || c.unitsDone!==done){ c.unitsTotal=total; c.unitsDone=done; save(); }
 }
 
 async function renderChapter(ch){
   const col = el("div",{class:"col"}, ...chapterHeader(ch));
-  const tabs = el("div",{class:"tabs",role:"tablist"});
-  for (const [key,label] of TABS){
-    tabs.append(el("button",{role:"tab","aria-selected":route.tab===key?"true":"false",onclick:()=>go(ch.id,key)},label));
-  }
-  const body = el("div",{role:"tabpanel"}, el("p",{class:"muted"},"載入中…"));
-  col.append(tabs, body);
+  const body = el("div",null, el("p",{class:"muted"},"載入中…"));
+  col.append(body);
   main.replaceChildren(col);
-  let data;
-  try { data = await loadChapter(ch.id); }
+  let d;
+  try { d = await loadChapter(ch.id); }
   catch { body.replaceChildren(el("p",{class:"note"},"這一章的內容檔讀取失敗。重新整理頁面再試一次。")); return; }
   if (route.page!==ch.id) return;
-  const fn = { overview:tabOverview, reading:tabReading, terms:tabTerms, drills:tabDrills, quiz:tabQuiz, debate:tabDebate }[route.tab];
-  body.replaceChildren(...[fn(ch,data)].flat());
+  syncChapterMeta(ch, d);
+  const tabs = chapterTabs(d);
+  if (!tabs.some(t=>t[0]===route.tab)) route.tab = "path";
+  const bar = el("div",{class:"tabs",role:"tablist"});
+  refreshBar = ()=>{
+    syncChapterMeta(ch, d);
+    bar.replaceChildren(...tabs.map(([key,label])=>{
+      const u = d.units.find(x=>x.id===key);
+      const done = u ? unitState(ch,u).done : key==="quiz" ? quizPassed(ch) : false;
+      return el("button",{role:"tab","aria-selected":route.tab===key?"true":"false",class:done?"done":null,onclick:()=>go(ch.id,key)},
+        done ? el("span",{class:"tick","aria-label":"已完成"},"✓") : null, label);
+    }));
+  };
+  refreshBar();
+  const u = d.units.find(x=>x.id===route.tab);
+  const content = route.tab==="path" ? tabPath(ch,d) : u ? tabUnit(ch,d,u)
+    : route.tab==="quiz" ? tabQuiz(ch,d) : route.tab==="debate" ? tabDebate(ch,d) : tabRef(ch,d);
+  body.replaceChildren(bar, el("div",{role:"tabpanel"}, ...[content].flat()));
+  const cur = bar.querySelector('[aria-selected="true"]');
+  if (cur) bar.scrollLeft = cur.offsetLeft - bar.clientWidth/2 + cur.offsetWidth/2;
 }
 
-/* 導讀 */
-function tabOverview(ch, d){
-  const o = d.overview, c = chp(ch.id);
-  const cb = el("input",{type:"checkbox",id:"readSrc"}); cb.checked = !!c.readSource;
-  cb.onchange = ()=>{ c.readSource = cb.checked; save(); };
-  return [
-    el("p",{class:"lead"},o.lead),
-    el("h2",null,"這一章要學會的事"),
-    el("ul",{class:"clean"}, ...o.points.map(p=>el("li",null,p))),
-    el("h2",null,"原文的結構"),
-    el("div",{class:"steps"}, ...o.structure.map((s,i)=>el("div",{class:"step"},el("b",{class:"n"},CN_NUM(i+1)),el("div",null,el("div",{class:"name"},s.name),el("div",{class:"small muted"},s.desc))))),
-    el("h2",null,"建議的讀法"),
-    el("ol",{class:"clean"}, ...o.tips.map(t=>el("li",null,t))),
-    el("div",{class:"toolbar"}, el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,"reading")},"開始精讀")),
-    el("div",{class:"checkrow"}, cb, el("label",{for:"readSrc"},"我已讀完這一章的精讀"))
+/* checklist shared by the unit page and the path page */
+function checklistBox(ch, d, u, onChange){
+  const c = chp(ch.id);
+  const list = el("ul",{class:"checklist"});
+  u.checklist.forEach((text,i)=>{
+    const id = `ck-${u.id}-${i}`;
+    const cb = el("input",{type:"checkbox",id});
+    cb.checked = !!(c.checks?.[u.id]?.[i]);
+    cb.onchange = ()=>{
+      c.checks ||= {}; const arr = c.checks[u.id] ||= [];
+      arr[i] = cb.checked; save(); refreshBar(); onChange?.();
+    };
+    list.append(el("li",null, cb, el("label",{for:id}, text)));
+  });
+  return list;
+}
+function meter(got, n){
+  return el("span",{class:"meter"}, el("i",{style:`width:${n?got/n*100:0}%`}));
+}
+
+/* 學習路線 */
+function tabPath(ch, d){
+  const out = [ el("p",{class:"lead",style:"margin-top:1em"}, d.lead) ];
+  out.push(el("h2",null,"學完這一章，你會……"));
+  const goals = el("div",{class:"goals"});
+  const drawGoals = ()=>{
+    goals.replaceChildren(...d.units.map((u,i)=>{
+      const s = unitState(ch,u);
+      return el("button",{class:"goal"+(s.done?" done":""),type:"button",onclick:()=>go(ch.id,u.id)},
+        el("span",{class:"goal-no"}, s.done ? "✓" : CN_NUM(i+1)),
+        el("span",{class:"goal-body"},
+          el("span",{class:"goal-t"}, u.title),
+          el("span",{class:"goal-g"}, u.goal),
+          el("span",{class:"goal-s"}, u.source),
+          el("span",{class:"goal-m"}, meter(s.got,s.n), `檢核 ${s.got} / ${s.n}`)));
+    }), el("button",{class:"goal"+(quizPassed(ch)?" done":""),type:"button",onclick:()=>go(ch.id,"quiz")},
+        el("span",{class:"goal-no"}, quizPassed(ch) ? "✓" : "測"),
+        el("span",{class:"goal-body"},
+          el("span",{class:"goal-t"},"綜合測驗"),
+          el("span",{class:"goal-g"},"每回隨機 10 題，80 分以上算通過。"),
+          el("span",{class:"goal-m"}, chp(ch.id).quiz.attempts ? `最高 ${chp(ch.id).quiz.best} 分` : "還沒測過"))));
+  };
+  drawGoals();
+  out.push(goals);
+
+  out.push(el("h2",null,"原文段落對應到哪個單元"), el("p",{class:"muted"}, d.why),
+    el("div",{class:"tbl-wrap"}, el("table",{class:"grid"},
+      el("thead",null, el("tr",null, el("th",null,"原文段落"), el("th",null,"內容"), el("th",null,"在哪裡學"))),
+      el("tbody",null, ...d.sourceMap.map(r=>{
+        const i = d.units.findIndex(u=>u.id===r.unit);
+        return el("tr",null, el("td",null,r.src), el("td",null,r.what),
+          el("td",null, el("button",{class:"linkbtn",type:"button",onclick:()=>go(ch.id,r.unit)}, `單元${CN_NUM(i+1)}・${d.units[i].short}`)));
+      })))));
+
+  out.push(el("h2",null,"學習檢核總表"));
+  const total = el("p",{class:"stat"});
+  const drawTotal = ()=>{
+    const all = d.units.reduce((a,u)=>{ const s=unitState(ch,u); return [a[0]+s.got, a[1]+s.n]; },[0,0]);
+    total.replaceChildren(meter(all[0],all[1]), ` 已勾選 ${all[0]} / ${all[1]} 項　・　測驗${quizPassed(ch)?"已通過":"未通過"}`);
+  };
+  drawTotal();
+  out.push(el("p",{class:"muted small"},"每一項都是「我能……」的自我檢核。能做到就打勾；單元全部打勾就算完成，四個單元完成且測驗 80 分以上，這一章就完成了。"), total);
+  d.units.forEach((u,i)=>{
+    out.push(el("h3",null, el("button",{class:"linkbtn",type:"button",onclick:()=>go(ch.id,u.id)}, `單元${CN_NUM(i+1)}　${u.title}`)),
+      checklistBox(ch,d,u, ()=>{ drawTotal(); drawGoals(); }));
+  });
+  out.push(el("div",{class:"toolbar",style:"margin-top:24px"},
+    el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,d.units[0].id)},"從單元一開始"),
+    el("a",{href:"#intro",class:"small"},"還不熟辯經的三種回答？先看辯經入門")));
+  return out;
+}
+
+/* 單元 */
+function tabUnit(ch, d, u){
+  const i = d.units.indexOf(u), c = chp(ch.id);
+  const out = [
+    el("div",{class:"unit-head"},
+      el("div",{class:"eyebrow"}, `單元${CN_NUM(i+1)} / ${CN_NUM(d.units.length)}`),
+      el("h2",{class:"unit-title"}, u.title),
+      el("div",{class:"goalbox"}, el("b",null,"學習目標　"), u.goal),
+      el("div",{class:"small muted"}, u.source))
   ];
+  for (const b of u.blocks) out.push(renderBlock(ch, d, b));
+
+  // practice: this unit's drills and quiz items, not scored
+  const dr = (u.drills||[]).map(id=>d.drills.find(x=>x.id===id)).filter(Boolean);
+  const pq = (u.practice||[]).map(id=>d.quiz.find(x=>x.id===id)).filter(Boolean);
+  if (dr.length || pq.length){
+    const stat = el("span",{class:"stat"});
+    const updStat = ()=>{
+      const rec = [...dr.map(x=>c.drills[x.id]), ...pq.map(x=>c.prac?.[x.id])];
+      stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`;
+    };
+    updStat();
+    out.push(el("h2",null,"小練習"), el("p",{class:"muted small"},"不計分。答完會顯示解說，紀錄會保留。"), el("div",{class:"toolbar"}, stat));
+    for (const it of dr){
+      const [btns, fb] = answerButtons(it.a, ok=>{
+        c.drills[it.id] = ok?"ok":"bad"; save(); updStat();
+        fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
+      });
+      const prev = c.drills[it.id];
+      out.push(el("div",{class:"drill"},
+        el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prev ? el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯") : null),
+        argCard(it.s,it.p,it.r), btns, fb));
+    }
+    for (const q of pq){
+      const fb = el("div");
+      const prev = c.prac?.[q.id];
+      out.push(el("div",{class:"qcard drill"},
+        prev ? el("div",{class:"drill-ctx"}, el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯")) : null,
+        ...qBody(q, ok=>{ c.prac ||= {}; c.prac[q.id] = ok?"ok":"bad"; save(); updStat();
+          fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); }),
+        fb));
+    }
+  }
+
+  const doneNote = el("p",{class:"small"});
+  const drawDone = ()=>{ const s = unitState(ch,u); doneNote.textContent = s.done ? "這個單元完成了。" : `還有 ${s.n-s.got} 項沒打勾。做不到的項目，回到上面對應的段落再讀一次。`; };
+  drawDone();
+  out.push(el("h2",null,"本單元檢核"), checklistBox(ch,d,u, drawDone), doneNote);
+
+  const prev = i===0 ? ["path","← 學習路線"] : [d.units[i-1].id, `← 單元${CN_NUM(i)}`];
+  const next = i===d.units.length-1 ? ["quiz","綜合測驗 →"] : [d.units[i+1].id, `單元${CN_NUM(i+2)}・${d.units[i+1].short} →`];
+  out.push(el("div",{class:"pager"},
+    el("button",{class:"btn ghost",type:"button",onclick:()=>go(ch.id,prev[0])}, prev[1]),
+    el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,next[0])}, next[1])));
+  return out;
 }
 
-/* 精讀: the chapter's text walked through section by section */
-function roleTag(by, part){
-  // 破除他宗: 自宗 asks, 他宗 answers. 斷除諍論: 他宗 asks, 自宗 answers.
-  return el("span",{class:"role "+(by==="自"?"self":"other")}, by==="自" ? "自宗" : "他宗");
+/* content blocks */
+function renderBlock(ch, d, b){
+  const box = el("section",{class:"block"});
+  if (b.title) box.append(el("h3",null,b.title));
+  for (const p of b.body||[]) box.append(el("p",null,p));
+  if (b.type==="table"){
+    box.append(el("div",{class:"tbl-wrap"}, el("table",{class:"grid"},
+      el("thead",null, el("tr",null, ...b.head.map(h=>el("th",null,h)))),
+      el("tbody",null, ...b.rows.map(r=>el("tr",null, ...r.map(v=>el("td",null,v))))))));
+    if (b.note) box.append(el("p",{class:"small muted"}, b.note));
+  }
+  if (b.type==="kepan") box.append(el("div",{class:"kp-wrap"}, kpNode(d.tree)));
+  if (b.type==="fourfold") box.append(fourGrid(d.fourfold));
+  if (b.type==="nest") box.append(nestBox(d.nest, 0));
+  if (b.type==="flow") box.append(el("ol",{class:"flow-steps"}, ...b.items.map(([n,t],i)=>el("li",null,
+    el("b",{class:"n"}, CN_NUM(i+1)), el("div",null, el("div",{class:"name"},n), el("div",{class:"small muted"},t))))));
+  if (b.type==="sections"){
+    const secs = b.ids.map(id=>d.sections.find(s=>s.sec===id)).filter(Boolean);
+    const cards = secs.map((s,i)=>sectionCard(s, i===0));
+    box.append(el("div",{class:"jump"}, ...secs.map((s,i)=>el("button",{type:"button",onclick:()=>{ cards[i].querySelector("details").open = true; cards[i].scrollIntoView({behavior:"smooth",block:"start"}); }}, s.sec))), ...cards);
+  }
+  return box;
 }
+function kpNode(n){
+  const label = el("div",{class:"kp-label"}, el("b",null,n.t),
+    n.d ? el("span",{class:"kp-def"}, n.d) : null,
+    n.items ? el("span",{class:"kp-items"}, n.items.join("、")) : null);
+  const kids = n.c || [];
+  return el("div",{class:"kp-node"}, label, kids.length ? el("div",{class:"kp-children"}, ...kids.map(kpNode)) : null);
+}
+function nestBox(n, depth){
+  const inner = [...(n.c||[]).map(x=>nestBox(x, depth+1)), ...(n.items||[]).map(t=>el("span",{class:"chip"},t))];
+  return el("div",{class:"nb d"+(depth%2)},
+    el("div",{class:"nb-h"}, n.t, n.note ? el("small",null,n.note) : null),
+    inner.length ? el("div",{class:"nb-in"}, ...inner) : null);
+}
+function fourGrid(f){
+  const cs = f.cases;
+  return el("div",{class:"four"},
+    el("div",{class:"hd"}), el("div",{class:"hd"},`是${f.b}`), el("div",{class:"hd"},`不是${f.b}`),
+    el("div",{class:"hd"},`是${f.a}`), el("div",{class:"cell"},el("b",null,cs[2].label),cs[2].eg), el("div",{class:"cell"},el("b",null,cs[0].label),cs[0].eg),
+    el("div",{class:"hd"},`不是${f.a}`), el("div",{class:"cell"},el("b",null,cs[1].label),cs[1].eg), el("div",{class:"cell"},el("b",null,cs[3].label),cs[3].eg));
+}
+
+/* one book section: where it goes wrong, then the full exchange */
+function roleTag(by){ return el("span",{class:"role "+(by==="自"?"self":"other")}, by==="自" ? "自宗" : "他宗"); }
 function stepRow(st){
   const body = el("div",{class:"step-body"});
   if (st.arg) body.append(argCard(st.arg.s, st.arg.p, st.arg.r));
@@ -496,118 +758,51 @@ function stepRow(st){
 function layerBox(l){
   const path = el("div",{class:"crumbs"});
   l.path.forEach((p,i)=>{ if (i) path.append(el("span",{class:"sep","aria-hidden":"true"},"›")); path.append(el("span",{class:i===l.path.length-1?"here":null},p)); });
-  return el("div",{class:"layer"},
-    el("div",{class:"layer-h"},"錯在哪一層"),
-    path, l.mark && el("div",{class:"mark"}, l.mark), el("p",null,l.text));
+  return el("div",{class:"layer"}, el("div",{class:"layer-h"},"錯在哪一層"), path, l.mark ? el("div",{class:"mark"}, l.mark) : null, el("p",null,l.text));
 }
-function tabReading(ch, d){
-  if (!d.reading) return el("p",{class:"note",style:"margin-top:1em"},"這一章的精讀還沒整理。");
-  const out = [];
-  const sections = [];
-  if (d.mainline){
-    out.push(el("h2",{style:"margin-top:1em"}, d.mainline.title),
-      el("div",{class:"mainline"}, ...d.mainline.items.map((m,i)=>el("div",{class:"ml-item"},
-        el("div",{class:"ml-name"}, el("b",{class:"n"},CN_NUM(i+1)), m.name),
-        el("div",{class:"ml-where"}, m.where),
-        el("div",{class:"small"}, m.desc)))));
-  }
-  const jump = el("div",{class:"jump"});
-  out.push(el("h3",null,"跳到段落"), jump);
-  const allDetails = [];
-  const toggleAll = el("button",{class:"btn ghost",type:"button"},"全部展開辯論過程");
-  toggleAll.onclick = ()=>{ const open = !allDetails.every(x=>x.open); allDetails.forEach(x=>x.open=open); toggleAll.textContent = open?"全部收合":"全部展開辯論過程"; };
-  out.push(el("div",{class:"toolbar"}, toggleAll));
-
-  for (const part of d.reading){
-    out.push(el("h2",null, part.part), el("p",{class:"muted"}, part.intro));
-    for (const it of part.items||[]){
-      const det = el("details",{class:"tl"}, el("summary",null,`書中的辯論過程（${it.steps.length} 步）`), el("ol",{class:"timeline"}, ...it.steps.map(stepRow)));
-      allDetails.push(det);
-      const card = el("section",{class:"rsec"},
-        el("div",{class:"rsec-h"}, el("span",{class:"sec"}, it.sec), el("span",{class:"claim"}, it.claim)),
-        it.layer ? layerBox(it.layer) : null,
-        det,
-        it.takeaway ? el("p",{class:"takeaway"}, el("b",null,"記住　"), it.takeaway) : null);
-      sections.push([it.sec, card]); out.push(card);
-    }
-    for (const nt of part.notes||[]){
-      const card = el("section",{class:"rsec"}, el("h3",{style:"margin-top:0"}, nt.title), ...nt.body.map(b=>el("p",null,b)));
-      sections.push([nt.title.length>8 ? nt.title.slice(0,8)+"…" : nt.title, card]); out.push(card);
-    }
-  }
-  if (allDetails[0]) allDetails[0].open = true;
-  for (const [label, node] of sections) jump.append(el("button",{type:"button",onclick:()=>node.scrollIntoView({behavior:"smooth",block:"start"})}, label));
-  out.push(el("div",{class:"toolbar",style:"margin-top:28px"},
-    el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,"drills")},"讀完了，去論式演練"),
-    el("a",{href:READER(ch.vol),target:"_blank",rel:"noopener",class:"small"},"對照原文（選讀）↗")));
-  return out;
+function sectionCard(it, open){
+  const det = el("details",{class:"tl"}, el("summary",null,`書中的辯論過程（${it.steps.length} 步）`), el("ol",{class:"timeline"}, ...it.steps.map(stepRow)));
+  det.open = !!open;
+  return el("section",{class:"rsec"},
+    el("div",{class:"rsec-h"}, el("span",{class:"sec"}, it.sec), el("span",{class:"claim"}, it.claim), el("span",{class:"part-tag"}, it.part)),
+    it.layer ? layerBox(it.layer) : null, det,
+    it.takeaway ? el("p",{class:"takeaway"}, el("b",null,"記住　"), it.takeaway) : null);
 }
 
-/* 名相 */
-function treeNode(n, root){
-  const kids = [];
-  const h = el("div",{class:"node-h"}, el("span",{class:"node-t"},n.t), n.d && el("span",{class:"def"},n.d));
-  kids.push(h);
-  if (n.s) kids.push(el("div",{class:"syn"},n.s));
-  if (n.items) kids.push(el("div",{class:"chips"}, ...n.items.map(i=>el("span",{class:"chip"},i))));
-  if (n.e) kids.push(el("div",{class:"eg"},n.e));
-  if (n.note) kids.push(el("div",{class:"nt"},n.note));
-  for (const c of n.c||[]) kids.push(treeNode(c,false));
-  return el("div",{class:"node"+(root?" root":"")}, ...kids);
-}
+/* 速查 */
 function collectDefs(n, out=[]){ if (n.d) out.push([n.t,n.d]); (n.c||[]).forEach(c=>collectDefs(c,out)); return out; }
-function tabTerms(ch, d){
-  const out = [ el("h2",{style:"margin-top:1em"},"分類樹"), el("div",{class:"tree"}, treeNode(d.tree,true)) ];
-  if (d.fourfold){
-    const f = d.fourfold, cs = f.cases;
-    out.push(el("h2",null,f.title),
-      el("div",{class:"four"},
-        el("div",{class:"hd"}), el("div",{class:"hd"},`是${f.b}`), el("div",{class:"hd"},`不是${f.b}`),
-        el("div",{class:"hd"},`是${f.a}`), el("div",{class:"cell"},el("b",null,cs[2].label),cs[2].eg), el("div",{class:"cell"},el("b",null,cs[0].label),cs[0].eg),
-        el("div",{class:"hd"},`不是${f.a}`), el("div",{class:"cell"},el("b",null,cs[1].label),cs[1].eg), el("div",{class:"cell"},el("b",null,cs[3].label),cs[3].eg)));
-  }
-  out.push(el("h2",null,"性相一覽"),
-    el("div",{class:"tbl-wrap"}, el("table",{class:"defs"}, el("tbody",null, ...collectDefs(d.tree).map(([t,v])=>el("tr",null,el("td",null,t),el("td",null,v)))))));
-  return out;
-}
-
-/* 論式演練 */
-function tabDrills(ch, d){
-  const c = chp(ch.id);
-  const all = d.drills.flatMap(s=>s.items);
-  let onlyWrong = false;
-  const stat = el("span",{class:"stat"});
-  const list = el("div");
-  const updStat = ()=>{ const done = all.filter(i=>c.drills[i.id]).length, ok = all.filter(i=>c.drills[i.id]==="ok").length; stat.textContent = `已答 ${done} / ${all.length}，答對 ${ok}`; };
-  const draw = ()=>{
-    list.replaceChildren(...d.drills.map(sec=>{
-      const items = sec.items.filter(i=>!onlyWrong || c.drills[i.id]==="bad");
-      if (!items.length) return null;
-      return el("div",{class:"drill-sec"},
-        el("h3",null, el("span",null,sec.sec), el("span",{class:"claim"},sec.claim)),
-        ...items.map(it=>{
-          const [btns, fb] = answerButtons(it.a, ok=>{
-            c.drills[it.id] = ok?"ok":"bad"; save(); updStat();
-            fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
-          });
-          return el("div",{class:"drill"}, argCard(it.s,it.p,it.r), btns, fb);
-        }));
-    }));
-    if (!list.childElementCount) list.append(el("p",{class:"note"},"目前沒有答錯的論式。"));
-  };
-  const toggle = el("button",{class:"btn ghost",type:"button"},"只看答錯的");
-  toggle.onclick = ()=>{ onlyWrong=!onlyWrong; toggle.textContent = onlyWrong?"顯示全部":"只看答錯的"; draw(); };
-  const reset = el("button",{class:"btn ghost",type:"button"},"清除作答紀錄");
-  reset.onclick = ()=>{ c.drills = {}; save(); updStat(); draw(); };
-  updStat(); draw();
+function tabRef(ch, d){
   return [
-    el("p",{class:"muted small",style:"margin-top:1em"},"依原文段落排列。先判斷宗，再判斷因。每題答完會顯示解說，這裡不計分。"),
-    el("div",{class:"toolbar"}, stat, toggle, reset),
-    list
-  ];
+    el("p",{class:"muted small",style:"margin-top:1em"},"複習和辯論時隨手查。"),
+    el("h2",null,"性相一覽"),
+    el("div",{class:"tbl-wrap"}, el("table",{class:"grid"},
+      el("thead",null, el("tr",null, el("th",null,"名相"), el("th",null,"性相"))),
+      el("tbody",null, ...collectDefs(d.tree).map(([t,v])=>el("tr",null, el("td",{class:"nowrap"},t), el("td",{class:"kai"},v)))))),
+    el("h2",null,"科判圖"), el("div",{class:"kp-wrap"}, kpNode(d.tree)),
+    d.fourfold ? [el("h2",null,d.fourfold.title), fourGrid(d.fourfold)] : null,
+    el("h2",null,"範圍圖"), nestBox(d.nest, 0)
+  ].flat().filter(Boolean);
 }
 
 /* 測驗 */
+// One question (multiple choice, true/false, or a 論式 to answer); calls mark(ok) once.
+function qBody(q, mark){
+  if (q.type==="resp"){
+    const [btns] = answerButtons(q.a, ok=>mark(ok));
+    return [el("div",{class:"qtext"},"這個論式應當怎麼回答？"), argCard(q.s,q.p,q.r), btns];
+  }
+  const opts = q.type==="tf" ? [["對",true],["錯",false]] : (q.fixed ? q.o.map((t,i)=>[t,i]) : shuffle(q.o.map((t,i)=>[t,i])));
+  const wrap = el("div",{class:"opts"});
+  for (const [label,val] of opts){
+    const b = el("button",{class:"opt",type:"button"},label);
+    b.onclick = ()=>{
+      wrap.querySelectorAll("button").forEach(x=>{ x.disabled=true; if (x.dataset.v===String(q.a)) x.classList.add("right"); });
+      const ok = val===q.a; if (!ok) b.classList.add("wrong"); mark(ok);
+    };
+    b.dataset.v = String(val); wrap.append(b);
+  }
+  return [el("div",{class:"qtext"}, q.type==="tf" ? "判斷對錯：" + q.q : q.q), wrap];
+}
 function tabQuiz(ch, d){
   const c = chp(ch.id);
   const box = el("div",{style:"margin-top:1em"});
@@ -624,24 +819,7 @@ function tabQuiz(ch, d){
       const next = el("button",{class:"btn",type:"button",hidden:true}, idx+1<items.length?"下一題":"看結果");
       next.onclick = ()=>{ idx++; step(); };
       const mark = ok=>{ if(ok) right++; else wrong.push(q); fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); next.hidden=false; next.focus(); };
-      if (q.type==="resp"){
-        card.append(el("div",{class:"qtext"},"這個論式應當怎麼回答？"), argCard(q.s,q.p,q.r));
-        const [btns] = answerButtons(q.a, ok=>mark(ok)); card.append(btns);
-      } else {
-        card.append(el("div",{class:"qtext"}, q.type==="tf" ? "判斷對錯：" + q.q : q.q));
-        const opts = q.type==="tf" ? [["對",true],["錯",false]] : (q.fixed ? q.o.map((t,i)=>[t,i]) : shuffle(q.o.map((t,i)=>[t,i])));
-        const wrap = el("div",{class:"opts"});
-        for (const [label,val] of opts){
-          const b = el("button",{class:"opt",type:"button"},label);
-          b.onclick = ()=>{
-            wrap.querySelectorAll("button").forEach(x=>{ x.disabled=true; if (x.dataset.v===String(q.a)) x.classList.add("right"); });
-            const ok = val===q.a; if (!ok) b.classList.add("wrong"); mark(ok);
-          };
-          b.dataset.v = String(val); wrap.append(b);
-        }
-        card.append(wrap);
-      }
-      card.append(fb, el("div",{class:"toolbar"},next));
+      card.append(...qBody(q, mark), fb, el("div",{class:"toolbar"},next));
       box.replaceChildren(card);
     };
     const finish = ()=>{
