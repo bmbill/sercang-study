@@ -257,6 +257,37 @@ table.grid td.nowrap{white-space:nowrap;font-weight:700}
 .nb-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.8rem;color:var(--muted)}
 .nb-legend>span{display:inline-flex;align-items:center;gap:6px}
 
+/* 科判式小節 */
+.toc-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:22px}
+.toc-h{font-size:.75rem;letter-spacing:.18em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.toc{list-style:none;margin:0;padding:0}
+.toc.l2,.toc.l3{padding-left:1.4em;border-left:1.5px solid var(--line);margin:2px 0 4px .5em}
+.toc button{border:0;background:none;padding:3px 4px;text-align:left;font-size:.93rem;line-height:1.5;border-radius:5px}
+.toc button:hover{background:var(--surface-2);color:var(--maroon)}
+.toc.l1>li>button{font-weight:700}
+.toc .sec-no{color:var(--maroon);font-variant-numeric:tabular-nums}
+.sec{scroll-margin-top:64px}
+.sec.l1{margin-top:40px;padding-top:6px;border-top:2px solid var(--line)}
+.sec.l2{margin-top:26px}
+.sec.l3,.sec.l4{margin-top:22px;padding-left:14px;border-left:3px solid var(--surface-2)}
+.sec-h{font-family:var(--f-display);text-wrap:balance;margin:0 0 .4em}
+h2.sec-h{font-size:1.35rem}
+h3.sec-h{font-size:1.1rem}
+h4.sec-h{font-size:1rem}
+.sec-h .sec-no{color:var(--maroon)}
+.sec.l3>.sec-h .sec-no,.sec.l4>.sec-h .sec-no{color:var(--saffron)}
+.sec-intro{color:var(--muted)}
+.sec .block{margin-top:14px}
+.see{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:12px;font-size:.88rem}
+.see-h{font-size:.72rem;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.see-link{border:1px dashed var(--maroon);background:transparent;color:var(--maroon);border-radius:6px;padding:2px 10px;font-size:.88rem}
+.see-link:hover{background:var(--maroon-soft)}
+.practice{margin-top:14px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px 12px}
+.practice-h{display:flex;gap:12px;align-items:baseline;font-size:.9rem}
+.practice-h b{color:var(--saffron)}
+.practice .drill{margin-top:10px}
+.checklist .ref{flex:none;border:0;background:var(--maroon-soft);color:var(--maroon);border-radius:5px;padding:0 7px;font-size:.78rem;font-weight:700;margin-top:.25em;font-variant-numeric:tabular-nums}
+
 /* 影片 */
 .video-wrap{border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%}
 .unit-video{display:block;width:100%;height:100%}
@@ -582,8 +613,9 @@ function chapterTabs(d){
     ["quiz","測驗"], ...(IN_CLAUDE?[["debate","AI 辯論"]]:[]), ["ref","速查"]];
 }
 function unitState(ch, u){
-  const checks = chp(ch.id).checks?.[u.id] || [];
-  const got = u.checklist.filter((_,i)=>checks[i]).length;
+  const m = chp(ch.id).checks?.[u.id];
+  const checks = m && !Array.isArray(m) ? m : {};
+  const got = u.checklist.filter(item=>checks[item.ref]).length;
   return { got, n:u.checklist.length, done: got===u.checklist.length };
 }
 function quizPassed(ch){ return (chp(ch.id).quiz?.best ?? 0) >= 80; }
@@ -620,23 +652,26 @@ async function renderChapter(ch){
   const content = route.tab==="path" ? tabPath(ch,d) : u ? tabUnit(ch,d,u)
     : route.tab==="quiz" ? tabQuiz(ch,d) : route.tab==="debate" ? tabDebate(ch,d) : tabRef(ch,d);
   body.replaceChildren(bar, el("div",{role:"tabpanel"}, ...[content].flat()));
+  if (pendingScroll){ const t = document.getElementById(pendingScroll); pendingScroll = null; if (t) setTimeout(()=>t.scrollIntoView({block:"start"}), 30); }
   const cur = bar.querySelector('[aria-selected="true"]');
   if (cur) bar.scrollLeft = cur.offsetLeft - bar.clientWidth/2 + cur.offsetWidth/2;
 }
 
-/* checklist shared by the unit page and the path page */
+/* checklist shared by the unit page and the path page; ticks are stored by 科判 ref, so reordering items keeps them */
 function checklistBox(ch, d, u, onChange){
   const c = chp(ch.id);
   const list = el("ul",{class:"checklist"});
-  u.checklist.forEach((text,i)=>{
+  u.checklist.forEach((item,i)=>{
     const id = `ck-${u.id}-${i}`;
     const cb = el("input",{type:"checkbox",id});
-    cb.checked = !!(c.checks?.[u.id]?.[i]);
+    cb.checked = !!(c.checks?.[u.id]?.[item.ref]);
     cb.onchange = ()=>{
-      c.checks ||= {}; const arr = c.checks[u.id] ||= [];
-      arr[i] = cb.checked; save(); refreshBar(); onChange?.();
+      c.checks ||= {}; const m = c.checks[u.id] = (c.checks[u.id] && !Array.isArray(c.checks[u.id])) ? c.checks[u.id] : {};
+      m[item.ref] = cb.checked; save(); refreshBar(); onChange?.();
     };
-    list.append(el("li",null, cb, el("label",{for:id}, text)));
+    list.append(el("li",null, cb,
+      el("button",{class:"ref",type:"button",title:"回到這一節",onclick:()=>jumpTo(ch, u.id, item.ref)}, item.ref),
+      el("label",{for:id}, item.text)));
   });
   return list;
 }
@@ -696,54 +731,93 @@ function tabPath(ch, d){
   return out;
 }
 
-/* 單元 */
+/* 單元：科判式的小節。一、→（一）→ 1. →(1)，ref 例如 "三(二)1(1)"，也是檢核清單與跨單元連結用的編號 */
+let pendingScroll = null;
+const secId = (uid, ref) => `sec-${uid}-${ref}`;
+function secRef(prefix, no, level){ return level===1 ? no : (level===2 || level===4) ? `${prefix}(${no})` : `${prefix}${no}`; }
+function secLabel(no, level){ return level===1 ? `${no}、` : level===2 ? `（${no}）` : level===3 ? `${no}. ` : `(${no}) `; }
+function jumpTo(ch, uid, ref){
+  const id = secId(uid, ref);
+  if (route.page===ch.id && route.tab===uid){ document.getElementById(id)?.scrollIntoView({block:"start"}); return; }
+  pendingScroll = id; go(ch.id, uid);
+}
+function seeLinks(ch, d, list){
+  if (!list?.length) return null;
+  return el("div",{class:"see"}, el("span",{class:"see-h"},"延伸"),
+    ...list.map(x=>el("button",{class:"see-link",type:"button",onclick:()=>{
+      if (x.page) return go(x.page);
+      if (x.tab) return go(ch.id, x.tab);
+      jumpTo(ch, x.unit, x.ref);
+    }}, "→ ", x.label)));
+}
+function practiceBox(ch, d, sec){
+  const c = chp(ch.id);
+  const dr = (sec.drills||[]).map(id=>d.drills.find(x=>x.id===id)).filter(Boolean);
+  const pq = (sec.practice||[]).map(id=>d.quiz.find(x=>x.id===id)).filter(Boolean);
+  if (!dr.length && !pq.length) return null;
+  const stat = el("span",{class:"stat"});
+  const upd = ()=>{ const rec = [...dr.map(x=>c.drills[x.id]), ...pq.map(x=>c.prac?.[x.id])];
+    stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`; };
+  upd();
+  const box = el("div",{class:"practice"}, el("div",{class:"practice-h"}, el("b",null,"小練習"), stat));
+  for (const it of dr){
+    const [btns, fb] = answerButtons(it.a, ok=>{
+      c.drills[it.id] = ok?"ok":"bad"; save(); upd();
+      fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
+    });
+    const prev = c.drills[it.id];
+    box.append(el("div",{class:"drill"},
+      el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prev ? el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯") : null),
+      argCard(it.s,it.p,it.r), btns, fb));
+  }
+  for (const q of pq){
+    const fb = el("div"), prev = c.prac?.[q.id];
+    box.append(el("div",{class:"qcard drill"},
+      prev ? el("div",{class:"drill-ctx"}, el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯")) : null,
+      ...qBody(q, ok=>{ c.prac ||= {}; c.prac[q.id] = ok?"ok":"bad"; save(); upd();
+        fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); }),
+      fb));
+  }
+  return box;
+}
+function renderSection(ch, d, u, sec, level, prefix){
+  const ref = secRef(prefix, sec.no, level);
+  const H = level===1 ? "h2" : level===2 ? "h3" : "h4";
+  const node = el("section",{class:`sec l${level}`, id:secId(u.id, ref)},
+    el(H,{class:"sec-h"}, el("span",{class:"sec-no"}, secLabel(sec.no, level)), sec.title),
+    sec.intro ? el("p",{class:"sec-intro"}, sec.intro) : null);
+  for (const b of sec.blocks||[]) node.append(renderBlock(ch, d, b));
+  const see = seeLinks(ch, d, sec.see); if (see) node.append(see);
+  const pr = practiceBox(ch, d, sec); if (pr) node.append(pr);
+  for (const c of sec.children||[]) node.append(renderSection(ch, d, u, c, level+1, ref));
+  return node;
+}
+function outlineToc(ch, u){
+  const mk = (secs, level, prefix) => el("ul",{class:"toc l"+level}, ...secs.map(s=>{
+    const ref = secRef(prefix, s.no, level);
+    return el("li",null, el("button",{type:"button",onclick:()=>jumpTo(ch, u.id, ref)}, el("span",{class:"sec-no"}, secLabel(s.no, level)), s.title),
+      s.children?.length && level < 3 ? mk(s.children, level+1, ref) : null);
+  }));
+  return el("nav",{class:"toc-box","aria-label":"本單元科判"}, el("div",{class:"toc-h"},"本單元科判"), mk(u.outline, 1, ""));
+}
 function tabUnit(ch, d, u){
-  const i = d.units.indexOf(u), c = chp(ch.id);
+  const i = d.units.indexOf(u);
   const out = [
     el("div",{class:"unit-head"},
       el("div",{class:"eyebrow"}, `單元${CN_NUM(i+1)} / ${CN_NUM(d.units.length)}`),
       el("h2",{class:"unit-title"}, u.title),
       el("div",{class:"goalbox"}, el("b",null,"學習目標　"), u.goal),
-      el("div",{class:"small muted"}, u.source))
-  ];
-  for (const b of u.blocks) out.push(renderBlock(ch, d, b));
-
-  // practice: this unit's drills and quiz items, not scored
-  const dr = (u.drills||[]).map(id=>d.drills.find(x=>x.id===id)).filter(Boolean);
-  const pq = (u.practice||[]).map(id=>d.quiz.find(x=>x.id===id)).filter(Boolean);
-  if (dr.length || pq.length){
-    const stat = el("span",{class:"stat"});
-    const updStat = ()=>{
-      const rec = [...dr.map(x=>c.drills[x.id]), ...pq.map(x=>c.prac?.[x.id])];
-      stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`;
-    };
-    updStat();
-    out.push(el("h2",null,"小練習"), el("p",{class:"muted small"},"不計分。答完會顯示解說，紀錄會保留。"), el("div",{class:"toolbar"}, stat));
-    for (const it of dr){
-      const [btns, fb] = answerButtons(it.a, ok=>{
-        c.drills[it.id] = ok?"ok":"bad"; save(); updStat();
-        fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
-      });
-      const prev = c.drills[it.id];
-      out.push(el("div",{class:"drill"},
-        el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prev ? el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯") : null),
-        argCard(it.s,it.p,it.r), btns, fb));
-    }
-    for (const q of pq){
-      const fb = el("div");
-      const prev = c.prac?.[q.id];
-      out.push(el("div",{class:"qcard drill"},
-        prev ? el("div",{class:"drill-ctx"}, el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯")) : null,
-        ...qBody(q, ok=>{ c.prac ||= {}; c.prac[q.id] = ok?"ok":"bad"; save(); updStat();
-          fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); }),
-        fb));
-    }
-  }
+      el("div",{class:"small muted"}, u.source)),
+    u.video ? renderBlock(ch, d, u.video) : null,
+    outlineToc(ch, u),
+    ...u.outline.map(s=>renderSection(ch, d, u, s, 1, ""))
+  ].filter(Boolean);
 
   const doneNote = el("p",{class:"small"});
-  const drawDone = ()=>{ const s = unitState(ch,u); doneNote.textContent = s.done ? "這個單元完成了。" : `還有 ${s.n-s.got} 項沒打勾。做不到的項目，回到上面對應的段落再讀一次。`; };
+  const drawDone = ()=>{ const s = unitState(ch,u); doneNote.textContent = s.done ? "這個單元完成了。" : `還有 ${s.n-s.got} 項沒打勾。做不到的項目，點前面的編號回到那一節再讀一次。`; };
   drawDone();
-  out.push(el("h2",null,"本單元檢核"), checklistBox(ch,d,u, drawDone), doneNote);
+  out.push(el("section",{class:"sec l1",id:secId(u.id,"檢核")},
+    el("h2",{class:"sec-h"}, el("span",{class:"sec-no"},"✓ "), "本單元檢核"), checklistBox(ch,d,u, drawDone), doneNote));
 
   const prev = i===0 ? ["path","← 學習路線"] : [d.units[i-1].id, `← 單元${CN_NUM(i)}`];
   const next = i===d.units.length-1 ? ["quiz","綜合測驗 →"] : [d.units[i+1].id, `單元${CN_NUM(i+2)}・${d.units[i+1].short} →`];
