@@ -252,6 +252,10 @@ table.grid td.nowrap{white-space:nowrap;font-weight:700}
 .nb-h small{font-family:var(--f-kai);font-weight:400;color:var(--maroon)}
 .nb-in{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:flex-start}
 .nb-in>.nb{flex:1 1 auto}
+.chip.extra{border-style:dashed;border-width:1.5px;color:var(--muted);background:transparent}
+.chip.eg{border-color:var(--saffron);background:var(--saffron-soft);color:var(--saffron)}
+.nb-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.8rem;color:var(--muted)}
+.nb-legend>span{display:inline-flex;align-items:center;gap:6px}
 
 /* 精讀 */
 .mainline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
@@ -714,7 +718,7 @@ function renderBlock(ch, d, b){
   }
   if (b.type==="kepan") box.append(el("div",{class:"kp-wrap"}, kpNode(d.tree)));
   if (b.type==="fourfold") box.append(fourGrid(d.fourfold));
-  if (b.type==="nest") box.append(nestBox(d.nest, 0));
+  if (b.type==="nest") box.append(nestBox(d.nest, 0), nestLegend());
   if (b.type==="flow") box.append(el("ol",{class:"flow-steps"}, ...b.items.map(([n,t],i)=>el("li",null,
     el("b",{class:"n"}, CN_NUM(i+1)), el("div",null, el("div",{class:"name"},n), el("div",{class:"small muted"},t))))));
   if (b.type==="sections"){
@@ -731,8 +735,17 @@ function kpNode(n){
   const kids = n.c || [];
   return el("div",{class:"kp-node"}, label, kids.length ? el("div",{class:"kp-children"}, ...kids.map(kpNode)) : null);
 }
+function nestLegend(){
+  return el("div",{class:"nb-legend"},
+    el("span",null, el("span",{class:"chip"},"白"), "書中列舉的項目"),
+    el("span",null, el("span",{class:"chip extra"},"黑色"), "也屬於這一類，但不在清單裡（單元三）"),
+    el("span",null, el("span",{class:"chip eg"},"聲音"), "書中當反例的事物（單元二）"));
+}
 function nestBox(n, depth){
-  const inner = [...(n.c||[]).map(x=>nestBox(x, depth+1)), ...(n.items||[]).map(t=>el("span",{class:"chip"},t))];
+  const inner = [...(n.c||[]).map(x=>nestBox(x, depth+1)),
+    ...(n.items||[]).map(t=>el("span",{class:"chip"},t)),
+    ...(n.extra||[]).map(t=>el("span",{class:"chip extra",title:"也屬於這一類，但不在書中清單裡"},t)),
+    ...(n.eg||[]).map(t=>el("span",{class:"chip eg",title:"書中的反例"},t))];
   return el("div",{class:"nb d"+(depth%2)},
     el("div",{class:"nb-h"}, n.t, n.note ? el("small",null,n.note) : null),
     inner.length ? el("div",{class:"nb-in"}, ...inner) : null);
@@ -780,7 +793,7 @@ function tabRef(ch, d){
       el("tbody",null, ...collectDefs(d.tree).map(([t,v])=>el("tr",null, el("td",{class:"nowrap"},t), el("td",{class:"kai"},v)))))),
     el("h2",null,"科判圖"), el("div",{class:"kp-wrap"}, kpNode(d.tree)),
     d.fourfold ? [el("h2",null,d.fourfold.title), fourGrid(d.fourfold)] : null,
-    el("h2",null,"範圍圖"), nestBox(d.nest, 0)
+    el("h2",null,"範圍圖"), nestBox(d.nest, 0), nestLegend()
   ].flat().filter(Boolean);
 }
 
