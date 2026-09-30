@@ -314,6 +314,17 @@ details.toc-box[open]>.toc{margin-top:8px}
 .pager .pg-btn:last-child{text-align:right;margin-left:auto}
 .checklist .ref{flex:none;border:0;background:var(--maroon-soft);color:var(--maroon);border-radius:5px;padding:0 7px;font-size:.78rem;font-weight:700;margin-top:.25em;font-variant-numeric:tabular-nums}
 
+.seg-player{margin-top:10px}
+.seg-h{display:flex;gap:10px;align-items:baseline;margin-bottom:6px;font-size:.9rem}
+.seg-h b{color:var(--maroon)}
+.seg-after{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.no-video{margin:8px 0 0;padding:6px 10px;border-left:3px solid var(--line)}
+.seg-list{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:2px}
+.seg-list .seg-unit{font-size:.78rem;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-top:8px}
+.seg-list button{border:0;background:none;padding:4px 6px;text-align:left;font-size:.92rem;border-radius:5px;display:flex;gap:10px;width:100%}
+.seg-list button:hover{background:var(--surface-2);color:var(--maroon)}
+.seg-t{font-variant-numeric:tabular-nums;color:var(--saffron);font-weight:700;min-width:2.8em}
+
 /* 影片 */
 .video-wrap{border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%}
 .unit-video{display:block;width:100%;height:100%}
@@ -716,6 +727,7 @@ function tabPath(ch, d){
   };
   drawGoals();
   out.push(goals);
+  const film = chapterFilm(ch, d); if (film) out.push(...film);
 
   out.push(el("h2",null,"原文段落對應到哪個單元"), el("p",{class:"muted"}, d.why),
     el("div",{class:"tbl-wrap"}, el("table",{class:"grid"},
@@ -739,6 +751,78 @@ function tabPath(ch, d){
     el("button",{class:"btn",type:"button",onclick:()=>go(ch.id,d.units[0].id)},"從單元一開始"),
     el("a",{href:"#intro",class:"small"},"還不熟辯經的三種回答？先看辯經入門")));
   return out;
+}
+
+/* 整章影片：一支完整影片依單元切成數個檔（d.film.files），每一段對應一個小節（unit + ref）。
+   小節頁只播自己那一段；單元導覽頁播整個單元；學習路線頁把各檔接起來連續播。 */
+const mmss = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}`;
+function filmFile(d, uid){ return d.film?.files.find(f=>f.unit===uid); }
+function filmSeg(d, uid, ref){ return filmFile(d, uid)?.segments.find(s=>s.ref===ref); }
+function segmentPlayer(ch, d, uid, ref, onNext){
+  const f = filmFile(d, uid), s = filmSeg(d, uid, ref);
+  if (!f || !s) return null;
+  const v = el("video",{class:"unit-video",controls:true,playsinline:true,preload:"metadata",src:`${f.src}#t=${s.start},${s.end}`});
+  const after = el("div",{class:"seg-after",hidden:true},
+    el("button",{class:"btn ghost",type:"button",onclick:()=>{ v.currentTime = s.start; v.play().catch(()=>{}); }},"⟲ 再看一次"),
+    onNext ? el("button",{class:"btn",type:"button",onclick:onNext},"下一節 →") : null);
+  let guard = false;
+  v.addEventListener("loadedmetadata", ()=>{ if (v.currentTime < s.start || v.currentTime > s.end) v.currentTime = s.start; });
+  v.addEventListener("play", ()=>{ after.hidden = true; if (v.currentTime < s.start - .3 || v.currentTime >= s.end - .1) v.currentTime = s.start; guard = true; });
+  v.addEventListener("timeupdate", ()=>{ if (guard && v.currentTime >= s.end - .05){ guard = false; v.pause(); after.hidden = false; } });
+  v.addEventListener("error", ()=>v.replaceWith(el("p",{class:"note"},"影片載入失敗。請確認網路連線後重新整理。")), {once:true});
+  return el("div",{class:"seg-player"},
+    el("div",{class:"seg-h"}, el("b",null,"本節影片"), el("span",{class:"muted small"}, `${mmss(s.end - s.start)}　可按右下角全螢幕`)),
+    el("div",{class:"video-wrap"}, v), after);
+}
+function noVideoNote(ch, d, uid, ref){
+  if (!d.film) return null;
+  const cov = d.film.covered.find(c=>c.unit===uid && c.ref===ref);
+  if (cov){
+    const s = filmSeg(d, uid, cov.by);
+    return el("p",{class:"no-video small"}, "本節的影片在 ", el("button",{class:"linkbtn",type:"button",onclick:()=>jumpTo(ch, uid, cov.by)}, s ? s.label : cov.by), "。");
+  }
+  return el("p",{class:"no-video small muted"}, "本節看圖表就好，沒有影片。");
+}
+function segmentList(ch, d, files, onPick){
+  return el("ol",{class:"seg-list"}, ...files.flatMap(f=>{
+    const ui = d.units.findIndex(u=>u.id===f.unit);
+    return [el("li",{class:"seg-unit"}, `單元${CN_NUM(ui+1)}　${d.units[ui].title}`),
+      ...f.segments.map(s=>el("li",null, el("button",{type:"button",onclick:()=>onPick(f, s)},
+        el("span",{class:"seg-t"}, mmss(s.start)), s.label)))];
+  }));
+}
+// 單元導覽頁：整個單元的影片，點段落跳到那一節
+function unitFilm(ch, d, u){
+  const f = filmFile(d, u.id);
+  if (!f) return null;
+  const v = el("video",{class:"unit-video",controls:true,playsinline:true,preload:"metadata",poster:f.poster,src:f.src});
+  return el("div",{class:"block"},
+    el("h3",null,`本單元影片（${mmss(f.dur)}）`),
+    el("div",{class:"video-wrap"}, v),
+    el("p",{class:"small muted"},"小助教宜臻帶你看完這個單元；每一節的頁面也只播那一段。點下面的段落直接看那一節。"),
+    segmentList(ch, d, [f], (_, s)=>jumpTo(ch, u.id, s.ref)));
+}
+// 學習路線頁：整章連續播放
+function chapterFilm(ch, d){
+  if (!d.film) return null;
+  const files = d.film.files, total = files.reduce((a,f)=>a+f.dur, 0);
+  let cur = 0;
+  const v = el("video",{class:"unit-video",controls:true,playsinline:true,preload:"metadata",poster:files[0].poster,src:files[0].src});
+  const now = el("span",{class:"small muted"});
+  const load = (i, t=0, play=false)=>{
+    cur = i; const f = files[i];
+    if (!v.src.endsWith(f.src)){ v.src = f.src; v.poster = f.poster; }
+    const go2 = ()=>{ v.currentTime = t; if (play) v.play().catch(()=>{}); };
+    if (v.readyState >= 1 && v.src.endsWith(f.src)) go2(); else v.addEventListener("loadedmetadata", go2, {once:true});
+    now.textContent = `第 ${i+1} / ${files.length} 部分`;
+  };
+  v.addEventListener("ended", ()=>{ if (cur < files.length-1) load(cur+1, 0, true); });
+  load(0);
+  return [el("h2",null,`整章影片（${mmss(total)}）`),
+    el("div",{class:"video-wrap"}, v),
+    el("p",{class:"small muted"}, now, "　播完一個單元會自動接下一個。可按右下角全螢幕。"),
+    el("details",{class:"toc-box"}, el("summary",null, el("span",{class:"toc-h"},"影片段落"), el("span",{class:"toc-count"}, `${files.reduce((a,f)=>a+f.segments.length,0)} 段`)),
+      segmentList(ch, d, files, (f, s)=>{ load(files.indexOf(f), s.start, true); v.scrollIntoView({block:"center"}); }))];
 }
 
 /* 單元：科判式的小節，一頁一節。一、→（一）→ 1. →(1)，ref 例如 "三(二)1(1)"，也是跨單元連結用的編號。
@@ -871,7 +955,7 @@ function tabUnit(ch, d, u){
     body.append(
       el("div",{class:"goalbox"}, el("b",null,"學習目標　"), u.goal),
       el("div",{class:"small muted"}, u.source),
-      u.video ? renderBlock(ch, d, u.video) : null,
+      unitFilm(ch, d, u),
       el("p",{class:"muted small"}, `這個單元共 ${pages.length-1} 節，一次看一節。按下方「下一節」開始，或展開上面的「本單元科判」直接跳到想看的地方。`));
   } else {
     // 所在位置：上層各節的標題（第一次進到這一支時，連上層的導言一起顯示）
@@ -887,6 +971,8 @@ function tabUnit(ch, d, u){
     const node = el("section",{class:`sec cur l${P.level}`, id:secId(u.id, P.ref)},
       el(H,{class:"sec-h"}, el("span",{class:"sec-no"}, secLabel(s.no, P.level)), s.title),
       s.intro ? el("p",{class:"sec-intro"}, s.intro) : null);
+    const nextPg = pg < pages.length-1 ? ()=>go(ch.id, u.id, pg+1) : (i < d.units.length-1 ? ()=>go(ch.id, d.units[i+1].id, 0) : ()=>go(ch.id, "quiz"));
+    node.append(segmentPlayer(ch, d, u.id, P.ref, nextPg) || noVideoNote(ch, d, u.id, P.ref) || "");
     for (const b of s.blocks||[]) node.append(renderBlock(ch, d, b));
     const see = seeLinks(ch, d, s.see); if (see) node.append(see);
     const drawDone = ()=>{
