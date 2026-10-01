@@ -1,6 +1,6 @@
-const CACHE = "sts-20261001-150612";
+const CACHE = "sts-20261001-154813";
 const FONTS = "sts-fonts";
-const PRECACHE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "chapters/ch01.json", "chapters/ch02.json"];
+const PRECACHE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "chapters/ch01.json", "chapters/ch02.json", "chapters/ch03.json"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
