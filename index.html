@@ -650,10 +650,10 @@ function chapterTabs(d){
   return [["path","學習路線"], ...d.units.map((u,i)=>[u.id, `${CN_NUM(i+1)}・${u.short}`]),
     ["quiz","測驗"], ...(IN_CLAUDE?[["debate","AI 辯論"]]:[]), ["ref","速查"]];
 }
-// 單元完成＝每一節都完成（小練習全部答對；沒有練習的節看過就算）
+// 單元完成＝每一節都完成（小練習答對 PICK 題；沒有練習的節看過就算）
 function pageDone(ch, u, P){
-  const items = secItems(P.sec), c = chp(ch.id);
-  return items.length ? items.every(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok") : !!c.viewed?.[u.id]?.[P.ref];
+  const items = secItems(P.sec);
+  return items.length ? secCorrect(ch, P.sec) >= secNeed(P.sec) : !!chp(ch.id).viewed?.[u.id]?.[P.ref];
 }
 function unitState(ch, u){
   const secs = unitPages(u).filter(p=>p.kind==="sec");
@@ -741,7 +741,7 @@ function tabPath(ch, d){
   out.push(el("h2",null,"學習進度"));
   const all = d.units.reduce((a,u)=>{ const s=unitState(ch,u); return [a[0]+s.got, a[1]+s.n]; },[0,0]);
   out.push(el("p",{class:"stat"}, meter(all[0],all[1]), ` 已完成 ${all[0]} / ${all[1]} 節　・　測驗${quizPassed(ch)?"已通過":"未通過"}`),
-    el("p",{class:"muted small"},"一節的小練習全部答對，這一節就完成；四個單元的各節都完成、綜合測驗 80 分以上，這一章就完成。展開各單元的科判可以直接跳到那一節。"));
+    el("p",{class:"muted small"},"一節的小練習答對 3 題，這一節就完成；各單元的節都完成、綜合測驗 80 分以上，這一章就完成。展開各單元的科判可以直接跳到那一節。"));
   d.units.forEach((u,i)=>{
     const t = outlineToc(ch, u, null);
     t.querySelector(".toc-h").textContent = `單元${CN_NUM(i+1)}　${u.title}`;
@@ -857,13 +857,18 @@ function jumpTo(ch, uid, ref){
   go(ch.id, uid, pageOfRef(u, ref));
 }
 
-// 完成：這一節的小練習全部答對；沒有練習的節，看過就算。上層的節看底下各節。
+// 小練習：每一節有一個題庫（書中的論式＋練習題），每次隨機出 PICK 題；答對 PICK 題（題庫較小就全部）這一節就完成。
+// 沒有練習的節，看過就算。上層的節看底下各節。
+const PICK = 3;
 function secItems(s){ return [...(s.drills||[]).map(id=>["d",id]), ...(s.practice||[]).map(id=>["q",id])]; }
+function itemOk(c, [k,id]){ return (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok"; }
+function secNeed(s){ return Math.min(PICK, secItems(s).length); }
+function secCorrect(ch, s){ const c = chp(ch.id); return secItems(s).filter(it=>itemOk(c, it)).length; }
 function secDone(ch, u, s, ref){
   const c = chp(ch.id);
   const own = secItems(s);
   let ok = true;
-  if (own.length) ok = own.every(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok");
+  if (own.length) ok = secCorrect(ch, s) >= secNeed(s);
   else if (hasOwn(s)) ok = !!c.viewed?.[u.id]?.[ref];
   const kids = s.children || [];
   return ok && kids.every((k)=>secDone(ch, u, k, secRef(ref, k.no, refLevel(ref)+1)));
@@ -889,33 +894,43 @@ function seeLinks(ch, d, list){
 }
 function practiceBox(ch, d, sec, onChange){
   const c = chp(ch.id);
-  const dr = (sec.drills||[]).map(id=>d.drills.find(x=>x.id===id)).filter(Boolean);
-  const pq = (sec.practice||[]).map(id=>d.quiz.find(x=>x.id===id)).filter(Boolean);
-  if (!dr.length && !pq.length) return null;
+  const pool = [...(sec.drills||[]).map(id=>({k:"d", it:d.drills.find(x=>x.id===id)})),
+                ...(sec.practice||[]).map(id=>({k:"q", it:d.quiz.find(x=>x.id===id)}))].filter(x=>x.it);
+  if (!pool.length) return null;
+  const need = Math.min(PICK, pool.length);
+  const isOk = x => (x.k==="d" ? c.drills[x.it.id] : c.prac?.[x.it.id]) === "ok";
   const stat = el("span",{class:"stat"});
-  const upd = ()=>{ const rec = [...dr.map(x=>c.drills[x.id]), ...pq.map(x=>c.prac?.[x.id])];
-    stat.textContent = `已答 ${rec.filter(Boolean).length} / ${rec.length}，答對 ${rec.filter(r=>r==="ok").length}`; onChange?.(); };
-  const box = el("div",{class:"practice"}, el("div",{class:"practice-h"}, el("b",null,"小練習"), stat));
-  for (const it of dr){
-    const [btns, fb] = answerButtons(it.a, ok=>{
-      c.drills[it.id] = ok?"ok":"bad"; save(); upd();
-      fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
-    }, it.opts);
-    const prev = c.drills[it.id];
-    box.append(el("div",{class:"drill"},
-      el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prev ? el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯") : null),
-      argCard(it.s,it.p,it.r), btns, fb));
-  }
-  for (const q of pq){
-    const fb = el("div"), prev = c.prac?.[q.id];
-    box.append(el("div",{class:"qcard drill"},
-      prev ? el("div",{class:"drill-ctx"}, el("span",{class:"prev "+prev}, prev==="ok"?"上次答對":"上次答錯")) : null,
-      ...qBody(q, ok=>{ c.prac ||= {}; c.prac[q.id] = ok?"ok":"bad"; save(); upd();
-        fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), q.x)); }),
-      fb));
-  }
-  upd();
-  return box;
+  const upd = ()=>{ const got = pool.filter(isOk).length;
+    stat.textContent = `題庫 ${pool.length} 題，已答對 ${got} 題`; onChange?.(); };
+  const list = el("div");
+  const again = el("button",{class:"btn ghost",type:"button"},"換一組題目");
+  const draw = ()=>{
+    // 還沒答對的優先，其次是答對過的；每組隨機
+    const pick = [...shuffle(pool.filter(x=>!isOk(x))), ...shuffle(pool.filter(isOk))].slice(0, need);
+    list.replaceChildren(...pick.map(({k, it})=>{
+      const fb = el("div");
+      const prevMark = r => r ? el("span",{class:"prev "+r}, r==="ok"?"上次答對":"上次答錯") : null;
+      if (k==="d"){
+        const [btns] = answerButtons(it.a, ok=>{
+          c.drills[it.id] = ok?"ok":"bad"; save(); upd();
+          fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":`應答「${it.a}」。`), it.x));
+        }, it.opts);
+        return el("div",{class:"drill"}, el("div",{class:"drill-ctx"}, `原文 ${it.sec}`, prevMark(c.drills[it.id])), argCard(it.s,it.p,it.r), btns, fb);
+      }
+      return el("div",{class:"qcard drill"},
+        c.prac?.[it.id] ? el("div",{class:"drill-ctx"}, prevMark(c.prac[it.id])) : null,
+        ...qBody(it, ok=>{ c.prac ||= {}; c.prac[it.id] = ok?"ok":"bad"; save(); upd();
+          fb.replaceChildren(el("div",{class:"feedback "+(ok?"ok":"bad")}, el("b",null, ok?"答對。":"答錯。"), it.x)); }),
+        fb);
+    }));
+  };
+  again.onclick = draw;
+  again.hidden = pool.length <= need;
+  draw(); upd();
+  return el("div",{class:"practice"},
+    el("div",{class:"practice-h"}, el("b",null,"小練習"), stat),
+    el("p",{class:"small muted",style:"margin:4px 0 0"}, pool.length > need ? `每次隨機出 ${need} 題，答對 ${need} 題就完成這一節。` : `答對這 ${need} 題就完成這一節。`),
+    list, el("div",{class:"toolbar"}, again));
 }
 
 // 本單元科判：預設收合；每一節後面顯示 ✓；目前這一節加底色
@@ -936,7 +951,7 @@ function outlineToc(ch, u, curRef){
   return el("details",{class:"toc-box"},
     el("summary",null, el("span",{class:"toc-h"},"本單元科判"), el("span",{class:"toc-count"}, `已完成 ${got} / ${n} 節`), meter(got, n)),
     list,
-    el("p",{class:"small muted toc-note"},"✓ 表示這一節的小練習都答對了；沒有練習的節，看過就打勾。"));
+    el("p",{class:"small muted toc-note"},"✓ 表示這一節的小練習答對了 3 題（題庫較小就全部）；沒有練習的節，看過就打勾。"));
 }
 
 function tabUnit(ch, d, u){
@@ -978,9 +993,9 @@ function tabUnit(ch, d, u){
     const drawDone = ()=>{
       const items = secItems(s);
       if (!items.length){ doneLine.textContent = "本節沒有小練習，看完就算完成。"; doneLine.className = "page-done small"; return; }
-      const c = chp(ch.id), ok = items.filter(([k,id]) => (k==="d" ? c.drills[id] : c.prac?.[id]) === "ok").length;
-      doneLine.textContent = ok===items.length ? `本節完成 ✓　小練習 ${ok} / ${items.length} 題都答對了。` : `本節小練習答對 ${ok} / ${items.length} 題，全部答對就完成這一節。`;
-      doneLine.className = "page-done small" + (ok===items.length ? " ok" : "");
+      const ok = secCorrect(ch, s), need = secNeed(s);
+      doneLine.textContent = ok >= need ? `本節完成 ✓　已答對 ${ok} 題（題庫 ${items.length} 題，可以按「換一組題目」繼續練）。` : `本節已答對 ${ok} 題，答對 ${need} 題就完成這一節。`;
+      doneLine.className = "page-done small" + (ok >= need ? " ok" : "");
     };
     const pr = practiceBox(ch, d, s, ()=>{ drawDone(); drawToc(); refreshBar(); });
     if (pr) node.append(pr);
@@ -1237,7 +1252,7 @@ function tabQuiz(ch, d){
     step();
   };
   const intro = el("div",{class:"qcard"},
-    el("p",{style:"margin-top:0"},`題庫共 ${d.quiz.length} 題，每回隨機抽 10 題：性相、分類、四句，以及論式應答。`),
+    el("p",{style:"margin-top:0"},`題庫共 ${d.quiz.length} 題（包含各節小練習的題目），每回隨機抽 10 題，選項順序也會打亂。`),
     el("p",{class:"stat"}, c.quiz.attempts ? `最高 ${c.quiz.best} 分・上次 ${c.quiz.last} 分・已測 ${c.quiz.attempts} 次` : "還沒測過。"),
     el("div",{class:"toolbar"},
       el("button",{class:"btn",type:"button",onclick:()=>start(d.quiz)},"開始測驗"),
