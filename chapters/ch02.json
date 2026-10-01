@@ -3185,31 +3185,31 @@
         "unit": "u1",
         "src": "videos/ch02-u1.mp4",
         "poster": "videos/ch02-u1.jpg",
-        "dur": 186.63,
+        "dur": 184.42,
         "segments": [
           {
             "ref": "一(一)",
             "label": "一(一) 有與無",
-            "start": 41.74,
-            "end": 77.55
+            "start": 38.82,
+            "end": 74.78
           },
           {
             "ref": "一(二)",
             "label": "一(二) 有的四個同義詞",
-            "start": 77.55,
-            "end": 109.14
+            "start": 74.78,
+            "end": 106.52
           },
           {
             "ref": "二(一)",
             "label": "二(一) 實事與常法",
-            "start": 109.14,
-            "end": 140.65
+            "start": 106.52,
+            "end": 138.18
           },
           {
             "ref": "二(四)",
             "label": "二(四) 有的科判圖",
-            "start": 140.65,
-            "end": 186.63
+            "start": 138.18,
+            "end": 184.42
           }
         ]
       },
@@ -3217,31 +3217,31 @@
         "unit": "u2",
         "src": "videos/ch02-u2.mp4",
         "poster": "videos/ch02-u2.jpg",
-        "dur": 165.95,
+        "dur": 166.66,
         "segments": [
           {
             "ref": "一(一)",
             "label": "一(一) 證之為X的量",
             "start": 9.2,
-            "end": 56.8
+            "end": 57.01
           },
           {
             "ref": "二",
             "label": "二 無實事比常法寬",
-            "start": 56.8,
-            "end": 98.6
+            "start": 57.01,
+            "end": 99.01
           },
           {
             "ref": "三",
             "label": "三 他宗 1：證有 → 證實事",
-            "start": 98.6,
-            "end": 132.44
+            "start": 99.01,
+            "end": 133.0
           },
           {
             "ref": "四",
             "label": "四 他宗 2：證無實事 → 證常法",
-            "start": 132.44,
-            "end": 165.95
+            "start": 133.0,
+            "end": 166.66
           }
         ]
       },
@@ -3249,31 +3249,31 @@
         "unit": "u3",
         "src": "videos/ch02-u3.mp4",
         "poster": "videos/ch02-u3.jpg",
-        "dur": 174.63,
+        "dur": 175.34,
         "segments": [
           {
             "ref": "一(一)",
             "label": "一(一) 三步驟解讀",
             "start": 10.5,
-            "end": 63.3
+            "end": 63.55
           },
           {
             "ref": "一(三)",
             "label": "一(三) 「無」疊幾層",
-            "start": 63.3,
-            "end": 93.58
+            "start": 63.55,
+            "end": 93.99
           },
           {
             "ref": "二",
             "label": "二 他宗 3：聲音",
-            "start": 93.58,
-            "end": 132.54
+            "start": 93.99,
+            "end": 133.1
           },
           {
             "ref": "四",
             "label": "四 他宗 5：柱子",
-            "start": 132.54,
-            "end": 174.63
+            "start": 133.1,
+            "end": 175.34
           }
         ]
       },
@@ -3281,31 +3281,31 @@
         "unit": "u4",
         "src": "videos/ch02-u4.mp4",
         "poster": "videos/ch02-u4.jpg",
-        "dur": 193.03,
+        "dur": 193.93,
         "segments": [
           {
             "ref": "一(一)",
             "label": "一(一) 不遍與相違周遍",
             "start": 9.42,
-            "end": 47.99
+            "end": 48.14
           },
           {
             "ref": "一(二)",
             "label": "一(二) 三層：斷諍 1",
-            "start": 47.99,
-            "end": 99.96
+            "start": 48.14,
+            "end": 100.31
           },
           {
             "ref": "三",
             "label": "三 斷諍 2：所知",
-            "start": 99.96,
-            "end": 145.17
+            "start": 100.31,
+            "end": 145.72
           },
           {
             "ref": "四",
             "label": "四 第二章總結",
-            "start": 145.17,
-            "end": 180.45
+            "start": 145.72,
+            "end": 181.15
           }
         ]
       }
