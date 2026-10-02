@@ -3282,31 +3282,31 @@
         "unit": "u1",
         "src": "videos/ch05-u1.mp4",
         "poster": "videos/ch05-u1.jpg",
-        "dur": 182.64,
+        "dur": 182.69,
         "segments": [
           {
             "ref": "一",
             "label": "一 一與異",
-            "start": 36.85,
-            "end": 71.54
+            "start": 36.9,
+            "end": 71.59
           },
           {
             "ref": "二",
             "label": "二 一的三類與實質一",
-            "start": 71.54,
-            "end": 110.67
+            "start": 71.59,
+            "end": 110.72
           },
           {
             "ref": "三",
             "label": "三 同一類別的分類",
-            "start": 110.67,
-            "end": 149.41
+            "start": 110.72,
+            "end": 149.46
           },
           {
             "ref": "四",
             "label": "四 異的三類",
-            "start": 149.41,
-            "end": 182.64
+            "start": 149.46,
+            "end": 182.69
           }
         ]
       },

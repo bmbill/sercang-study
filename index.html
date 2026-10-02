@@ -812,7 +812,7 @@ function unitFilm(ch, d, u){
   return el("div",{class:"block"},
     el("h3",null,`本單元影片（${mmss(f.dur)}）`),
     el("div",{class:"video-wrap"}, v),
-    el("p",{class:"small muted"},"小助教宜臻帶你看完這個單元；每一節的頁面也只播那一段。點下面的段落直接看那一節。"),
+    el("p",{class:"small muted"},"小助教臻臻帶你看完這個單元；每一節的頁面也只播那一段。點下面的段落直接看那一節。"),
     segmentList(ch, d, [f], (_, s)=>jumpTo(ch, u.id, s.ref)));
 }
 // 學習路線頁：整章連續播放

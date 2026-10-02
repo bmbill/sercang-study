@@ -3811,25 +3811,25 @@
         "unit": "u1",
         "src": "videos/ch03-u1.mp4",
         "poster": "videos/ch03-u1.jpg",
-        "dur": 154.88,
+        "dur": 154.93,
         "segments": [
           {
             "ref": "一(一)",
             "label": "一(一) 是反與非反",
-            "start": 37.93,
-            "end": 83.04
+            "start": 37.98,
+            "end": 83.09
           },
           {
             "ref": "一(二)",
             "label": "一(二) 自宗的兩句結論",
-            "start": 83.04,
-            "end": 115.55
+            "start": 83.09,
+            "end": 115.6
           },
           {
             "ref": "二",
             "label": "二 換回原字的練習",
-            "start": 115.55,
-            "end": 154.88
+            "start": 115.6,
+            "end": 154.93
           }
         ]
       },
