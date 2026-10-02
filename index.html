@@ -467,7 +467,7 @@ const CHAPTERS = [
   [21,"詮類聲與詮聚聲的單元",13],[22,"遮破法成立法的單元",13],[23,"遣餘法的單元",13],[24,"大相違相係屬的單元",14],
   [25,"大應成的單元",14],[26,"大因果的單元",14]
 ].map(([no,title,vol])=>({no,title,vol,id:"ch"+String(no).padStart(2,"0")}));
-const BUILT = new Set(["ch01","ch02","ch03","ch04","ch05","ch06","ch07"]);   // add a chapter id here once chapters/chNN.json exists
+const BUILT = new Set(["ch01","ch02","ch03","ch04","ch05","ch06","ch07","ch08"]);   // add a chapter id here once chapters/chNN.json exists
 const PARTS = [["初級理路",1,8],["中級理路",9,17],["高級理路",18,26]];
 const CN_NUM = n => { const d="〇一二三四五六七八九"; if(n<10) return d[n]; if(n<20) return "十"+(n%10?d[n%10]:""); return d[Math.floor(n/10)]+"十"+(n%10?d[n%10]:""); };
 const partOf = no => PARTS.find(p=>no>=p[1]&&no<=p[2])[0];
